@@ -136,6 +136,10 @@ Parameters:
     Description: 'Load Balancer DNS Name Prefix, Example: [matillion]-1731869672.eu-west-1.elb.amazonaws.com'
     Type: String
     
+  ParentStackName:
+    Type: String
+    Description: "Enter parent Stack name, if applicable"
+    
   MatillionEC2InstanceType:
     AllowedValues:
     - m5.large
@@ -250,6 +254,11 @@ Conditions:
     Fn::Equals:
     - Ref: AWS::Region
     - us-gov-west-1
+  IsParentStackName:
+    Fn::Not:
+    - Fn::Equals:
+      - ''
+      - Ref: ParentStackName
     
 Mappings:
   RegionMap:
@@ -928,13 +937,7 @@ Resources:
       HealthyThresholdCount: '2'
       Matcher:
         HttpCode: '200'
-      Name:
-        Fn::Join:
-        - ''
-        - - MTLNTG-
-          - Fn::GetAtt:
-            - MatillionALB
-            - DNSName
+      Name: !Join [ "-", [ "MTLNTG-", !If [IsParentStackName, !Ref ParentStackName, !Ref 'AWS::StackName']   ] ]
       Port: '80'
       Protocol: HTTP
       TargetGroupAttributes:

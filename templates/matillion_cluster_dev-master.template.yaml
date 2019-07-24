@@ -547,6 +547,7 @@ Resources:
         - https://sudhig-cfn-templates.s3.amazonaws.com/quickstart-aws-redshift/templates/matillion_cluster_dev.yml
         - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
       Parameters:
+        ParentStackName: !Ref AWS::StackName
         MatillionEC2InstanceType: !Ref MatillionEC2InstanceType
         KeyPairName: !Ref KeyPairName
         VPCID:
