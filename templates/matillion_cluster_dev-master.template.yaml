@@ -1,4 +1,4 @@
-Description: "This cloudformation template creates AWS VPC, Bastion host, Amazon Redshift and Matillion stacks."
+Description: "This cloudformation template creates AWS VPC, Bastion host, Amazon Redshift and HA Matillion stacks."
 Metadata:
   LICENSE: EULA - Matillion ETL for Redshift
   AWS::CloudFormation::Interface:
