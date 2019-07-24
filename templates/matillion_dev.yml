@@ -1,0 +1,578 @@
+Description: 'Matillion ETL CloudFormation: Single-Node Enterprise with existing AWS
+  resources'
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: Matillion EC2 Instance Configuration 
+      Parameters:
+      - MatillionEC2InstanceType
+      - KeyPairName
+    - Label:
+        default: Networking and Security Configuration
+      Parameters:
+      - VPCID
+      - PublicSubnet1
+      - PrivateSubnet1
+      - PrivateSubnet2
+      - RemoteAccessCIDR
+    - Label:
+        default: Matillion RDS/Postgres Repository Configuration
+      Parameters:
+      - PGMasterUsername
+      - PGMasterUserPassword
+      - PGDBPort
+      - PGDBName
+      - PGInstanceClass
+      - PGAllocatedStorage
+      - PGAutoMinorVersionUpgrade
+    ParameterLabels:
+      PGAllocatedStorage:
+        default: Storage Size
+      MatillionEC2InstanceType:
+        default: Matillion Instance Type
+      KeyPairName:
+        default: Keypair Name
+      PGDBName:
+        default: Matillion Postgres Database Name
+      PGDBPort:
+        default: Matillion Postgres Database Port
+      PGMasterUsername:
+        default: Matillion Postgres Master Username
+      PGMasterUserPassword:
+        default: Matillion Postgres Master Password
+      PGInstanceClass:
+        default: Matillion Postgres Instance Class
+      PGAutoMinorVersionUpgrade:
+         default: Postgres auto minor version upgrade
+      PrivateSubnet1:
+        default: Private Subnet 1
+      PrivateSubnet2:
+        default: Private Subnet 2 
+      RemoteAccessCIDR:
+        default: Permitted IP range
+      PublicSubnet1:
+        default: Public Subnet 1
+      VPCID:
+        default: VPC Id
+        
+Parameters:
+  
+  VPCID:
+    Description: "Enter existing VPC-ID. This must be the VPC containing the subnet(s)."
+    Type: AWS::EC2::VPC::Id
+  PublicSubnet1:
+    Description: "An existing Public subnet to launch the Matillion ec2 instance(s) into."
+    Type: AWS::EC2::Subnet::Id
+  PrivateSubnet1:
+    Description: "An existing Private subnet 1 to launch secondary resources, e.g. Postgres database."
+    Type: AWS::EC2::Subnet::Id
+  PrivateSubnet2:
+    Description: "An existing Private subnet 2 to launch secondary resources, e.g. Postgres database."
+    Type: AWS::EC2::Subnet::Id
+  KeyPairName:
+    Description: "The selected key pair will be added to the set of keys authorized for Ec2 instance."
+    Type: AWS::EC2::KeyPair::KeyName
+  RemoteAccessCIDR:
+    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$"
+    ConstraintDescription: "CIDR block parameter must be in the form x.x.x.x/x"
+    Description: "Allowed CIDR block for external SSH access."
+    Type: String
+  MatillionEC2InstanceType:
+    AllowedValues:
+    - m5.large
+    - m5.xlarge
+    Default: m5.large
+    Description: Matillion instance(s) size. Larger sizes allow for running more concurrent
+      tasks, See https://www.matillion.com/pricing/etl-for-redshift/ for more info.
+    Type: String
+  PGDBName:
+    AllowedPattern: "([a-z]|[0-9])+"
+    Default: matillion
+    Description: The Postgres database in which Matillion will store its metadata
+      repository.
+    Type: String
+  PGMasterUserPassword:
+    AllowedPattern: "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,64}$"
+    Description: Postgres Password. Must contain one upper and one lower case letter
+      and one digit but not quotes, slashes, @ or spaces.
+    NoEcho: true
+    Type: String
+  PGDBPort:
+    Default: '8201'
+    Description: Specify the TCP/IP port that the DB instance will use for application
+      connections.
+    MaxValue: 65535
+    MinValue: 1150
+    Type: Number
+  PGMasterUsername:
+    AllowedPattern: "^[a-zA-Z]{1}[a-z0-9]*"
+    Default: matillion
+    Description: Initial Postgres Username. This user will be an admin role.
+    Type: String
+  PGInstanceClass:
+    AllowedValues:
+    - db.t2.medium
+    - db.t2.large
+    - db.m4.large
+    - db.m4.xlarge
+    Default: db.m4.large
+    Description: Database instance class
+    Type: String
+  PGAutoMinorVersionUpgrade: 
+    AllowedValues: 
+      - "true"
+      - "false"
+    Default: "false"
+    Description: "Select true to set up auto minor version upgrade."
+    Type: String
+  PGAllocatedStorage:
+    ConstraintDescription: must be between 5 and 1024Gb.
+    Default: '20'
+    Description: The size of the database (Gb)
+    MaxValue: '1024'
+    MinValue: '5'
+    Type: Number
+    
+Conditions:
+  IsGovCloud:
+    Fn::Equals:
+    - Ref: AWS::Region
+    - us-gov-west-1
+    
+Mappings:
+  RegionMap:
+    ap-northeast-1:
+      AMI: ami-0dd8953f1762267dd
+    ap-northeast-2:
+      AMI: ami-019bf5ce4932b07cc
+    ap-south-1:
+      AMI: ami-01870cbc597a373ee
+    ap-southeast-1:
+      AMI: ami-0695bc504e31c2e7e
+    ap-southeast-2:
+      AMI: ami-07eca1718c81832ec
+    ca-central-1:
+      AMI: ami-026d2427e9c2c4cdf
+    eu-central-1:
+      AMI: ami-057c8f2f3754ba7a6
+    eu-west-1:
+      AMI: ami-098ce2033362a800e
+    eu-west-2:
+      AMI: ami-0f220fce779f2e42c
+    eu-west-3:
+      AMI: ami-08e02ca682137109a
+    sa-east-1:
+      AMI: ami-0aacb636b321a8935
+    us-east-1:
+      AMI: ami-0776fdda5813fd556
+    us-east-2:
+      AMI: ami-0351655f1fdcd58c8
+    us-west-1:
+      AMI: ami-0cc13a60afeef7a61
+    us-west-2:
+      AMI: ami-06f55da5cdcb4e1cf
+      
+Resources:
+  CDCRoleForDMS:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - dms.amazonaws.com
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:ListBucket
+            Effect: Allow
+            Resource: "*"
+            Sid: CDCPermissionsForDMS
+        PolicyName: CDCPermissionsForDMS
+    Type: AWS::IAM::Role
+  CDCRoleForLambda:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:ListBucket
+            - sqs:GetQueueUrl
+            - sqs:SendMessage
+            Effect: Allow
+            Resource: "*"
+            Sid: CDCPermissionsForLambda
+        PolicyName: CDCPermissionsForLambda
+    Type: AWS::IAM::Role
+  MatillionEc2Instance:
+    DependsOn: MatillionPostgresDB
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          commands:
+            setup:
+              command: "/sbin/service tomcat8 stop && rm -r /var/log/tomcat8/catalina.out
+                && /usr/share/emerald/WEB-INF/classes/scripts/matillion_ensure.sh
+                && /sbin/service tomcat8 start"
+          files:
+            "/etc/awslogs/awscli.conf":
+              content:
+                Fn::Join:
+                - ''
+                - - "[plugins]\ncwlogs = cwlogs\n[default]\nregion = "
+                  - Ref: AWS::Region
+              group: root
+              mode: '000644'
+              owner: root
+            "/etc/awslogs/awslogs.conf":
+              content: |
+                [general]
+                state_file = /var/lib/awslogs/agent-state
+                [/var/log/tomcat8/catalina.out]
+                datetime_format = %d-%b-%Y %H:%M:%S.%f
+                file = /var/log/tomcat8/catalina.out
+                buffer_duration = 5000
+                log_stream_name = {instance_id}
+                initial_position = start_of_file
+                log_group_name = Matillion-ETL
+              group: root
+              mode: '000644'
+              owner: root
+            "/etc/sysconfig/tomcat8":
+              content:
+                Fn::Join:
+                - ''
+                - - "export MTLN_PERSISTENCE_STORE_NAME=postgres \n"
+                  - export MTLN_PERSISTENCE_USERNAME_POSTGRES=
+                  - Ref: PGMasterUsername
+                  - "\n"
+                  - export MTLN_PERSISTENCE_PASSWORD_POSTGRES={enc:base64}
+                  - Fn::Base64:
+                      Ref: PGMasterUserPassword
+                  - "\n"
+                  - export MTLN_PERSISTENCE_URL_POSTGRES=
+                  - Fn::Join:
+                    - ''
+                    - - jdbc:postgresql://
+                      - Fn::GetAtt:
+                        - MatillionPostgresDB
+                        - Endpoint.Address
+                      - ":"
+                      - Fn::GetAtt:
+                        - MatillionPostgresDB
+                        - Endpoint.Port
+                      - "/"
+                      - Ref: PGDBName
+              group: root
+              mode: '000644'
+              owner: root
+    Properties:
+      IamInstanceProfile:
+        Ref: MatillionEC2InstanceProfile
+      ImageId:
+        Fn::FindInMap:
+        - RegionMap
+        - Ref: AWS::Region
+        - AMI
+      InstanceType:
+        Ref: MatillionEC2InstanceType
+      KeyName:
+        Ref: KeyPairName
+      SecurityGroupIds:
+      - Ref: MatillionSecurityGroup
+      SubnetId:
+        Ref: PublicSubnet1
+      Tags:
+      - Key: Name
+        Value: Matillion-ETL
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - "#!/bin/bash -xe \n"
+            - "yum install -y awslogs xmlstarlet \n"
+            - "chkconfig awslogs on \n"
+            - "yum update -y aws-cfn-bootstrap \n"
+            - "/opt/aws/bin/cfn-init -v "
+            - " --stack "
+            - Ref: AWS::StackName
+            - " --resource "
+            - MatillionEc2Instance
+            - " --region "
+            - Ref: AWS::Region
+            - "\n"
+            - "/opt/aws/bin/cfn-signal -e  $? "
+            - " --stack "
+            - Ref: AWS::StackName
+            - " --resource "
+            - MatillionEc2Instance
+            - " --region "
+            - Ref: AWS::Region
+            - "\n"
+            - "service awslogs start \n"
+            
+    Type: AWS::EC2::Instance
+    
+  MatillionSecurityGroup:
+    Properties:
+      GroupDescription: MatillionEC2SecurityGroup
+      SecurityGroupIngress:
+      - 
+          CidrIp: !Ref RemoteAccessCIDR 
+          FromPort: 80
+          ToPort: 80
+          IpProtocol: tcp
+      - 
+          CidrIp: !Ref RemoteAccessCIDR 
+          FromPort: 443
+          ToPort: 443
+          IpProtocol: tcp
+      - 
+          CidrIp: !Ref RemoteAccessCIDR 
+          FromPort: 22
+          ToPort: 22
+          IpProtocol: tcp     
+      VpcId:
+        Ref: VPCID
+    Type: AWS::EC2::SecurityGroup
+    
+  PGSubnetGroup:
+    Properties:
+      DBSubnetGroupDescription: Subnets for the Postgres DB Instance
+      SubnetIds: 
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+    Type: AWS::RDS::DBSubnetGroup
+    
+  MatillionEC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+      - Ref: MatillionRole
+    
+  MatillionPGSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Matillion-PostgresDB-SecurityGroup
+      VpcId: !Ref VPCID
+      SecurityGroupIngress:
+      - FromPort: !Ref PGDBPort
+        IpProtocol: tcp
+        SourceSecurityGroupId: !Ref MatillionSecurityGroup
+        ToPort: !Ref PGDBPort
+    
+  MatillionPostgresDB:
+    DeletionPolicy: Snapshot
+    Properties:
+      AllocatedStorage:
+        Ref: PGAllocatedStorage
+      AutoMinorVersionUpgrade: !Ref PGAutoMinorVersionUpgrade
+      BackupRetentionPeriod: 30
+      DBInstanceClass:
+        Ref: PGInstanceClass
+      DBName:
+        Ref: PGDBName
+      DBSubnetGroupName:
+        Ref: PGSubnetGroup
+      Engine: postgres
+      EngineVersion: 9.6.1
+      MasterUserPassword:
+        Ref: PGMasterUserPassword
+      MasterUsername:
+        Ref: PGMasterUsername
+      MultiAZ: 'true'
+      Port:
+        Ref: PGDBPort
+      StorageType: gp2
+      VPCSecurityGroups:
+      - Ref: MatillionPGSecurityGroup
+    Type: AWS::RDS::DBInstance
+    
+  MatillionRole:
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - redshift:DescribeClusters
+            Effect: Allow
+            Resource:
+            - "*"
+            Sid: StmtMinRedshift
+          - Action:
+            - s3:ListAllMyBuckets
+            - s3:ListBucket
+            - s3:GetObject
+            - s3:PutObject
+            - s3:DeleteObject
+            - s3:GetBucketLocation
+            Effect: Allow
+            Resource:
+            - "*"
+            Sid: StmtMinS3
+          - Action:
+            - sqs:DeleteMessage
+            - sqs:ListQueues
+            - sqs:ReceiveMessage
+            - sqs:SendMessage
+            - sqs:GetQueueUrl
+            Effect: Allow
+            Resource:
+            - "*"
+            Sid: StmtMinSQS
+          - Action:
+            - rds:DescribeDBInstances
+            Effect: Allow
+            Resource:
+            - "*"
+            Sid: StmtMinRDS
+          - Action:
+            - ec2:CreateSnapshot
+            - ec2:CreateTags
+            - ec2:DescribeInstances
+            - ec2:DescribeVolumes
+            Effect: Allow
+            Resource:
+            - "*"
+            Sid: StmtMinEC2
+          - Action:
+            - sns:ListTopics
+            - sns:CreateTopic
+            - sns:Publish
+            Effect: Allow
+            Resource:
+            - "*"
+            Sid: StmtMinSNS
+          - Action:
+            - cloudwatch:PutMetricData
+            - cloudwatch:ListMetrics
+            Effect: Allow
+            Resource:
+            - "*"
+            Sid: StmtMinCloudwatch
+          - Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogStreams
+            Effect: Allow
+            Resource:
+            - Fn::If:
+              - IsGovCloud
+              - arn:aws-us-gov:logs:*:*:*
+              - arn:aws:logs:*:*:*
+            Sid: StmtMinCloudwatchLogs
+          - Action:
+            - kms:ListAliases
+            - kms:Encrypt
+            - kms:Decrypt
+            Effect: Allow
+            Resource:
+            - "*"
+            Sid: StmtMinKMS
+          - Action:
+            - dynamodb:ListTables
+            - dynamodb:DescribeTable
+            - dynamodb:Scan
+            Effect: Allow
+            Resource: "*"
+            Sid: StmtMinDynamoDB
+          - Action:
+            - dms:CreateEndpoint
+            - dms:CreateReplicationTask
+            - dms:DeleteEndpoint
+            - dms:DeleteReplicationTask
+            - dms:DescribeConnections
+            - dms:DescribeEndpoints
+            - dms:DescribeReplicationInstances
+            - dms:DescribeReplicationTasks
+            - dms:ModifyEndpoint
+            - dms:StartReplicationTask
+            - dms:StopReplicationTask
+            - dms:TestConnection
+            - ec2:DescribeRegions
+            - iam:ListRoles
+            - iam:PassRole
+            - lambda:AddPermission
+            - lambda:CreateFunction
+            - lambda:DeleteFunction
+            - lambda:GetFunction
+            - lambda:GetPolicy
+            - lambda:RemovePermission
+            - lambda:UpdateFunctionCode
+            - lambda:UpdateFunctionConfiguration
+            - s3:GetBucketNotification
+            - s3:ListAllMyBuckets
+            - s3:PutBucketNotification
+            - sqs:ChangeMessageVisibility
+            - sqs:DeleteMessage
+            - sqs:ListQueues
+            - sqs:ReceiveMessage
+            Effect: Allow
+            Resource: "*"
+            Sid: CDCPermissions
+        PolicyName: MatillionRolePolicy
+    Type: AWS::IAM::Role
+    
+Outputs:
+  DefaultMatillionUsername:
+    Description: Default Matillion Username
+    Value: ec2-user
+  MatillionEc2InstancePrivateEndpoint:
+    Description: Private Endpoint for Matillion Instance
+    Value:
+      Fn::GetAtt:
+      - MatillionEc2Instance
+      - PrivateIp
+  MatillionEc2InstancePublicEndpoint:
+    Description: Public Endpoint for Matillion Instance
+    Value:
+      Fn::Join:
+      - ''
+      - - http://
+        - Fn::GetAtt:
+          - MatillionEc2Instance
+          - PublicDnsName
+  MatillionEc2InstanceId:
+    Description: Instance ID (default password)
+    Value:
+      Ref: MatillionEc2Instance
+  RDSJDBCConnectionString:
+    Description: JDBC connection string for Matillion Postgres DB
+    Value:
+      Fn::Join:
+      - ''
+      - - jdbc:postgresql://
+        - Fn::GetAtt:
+          - MatillionPostgresDB
+          - Endpoint.Address
+        - ":"
+        - Fn::GetAtt:
+          - MatillionPostgresDB
+          - Endpoint.Port
+        - "/"
+        - Ref: PGDBName
