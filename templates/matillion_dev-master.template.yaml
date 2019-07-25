@@ -27,7 +27,7 @@ Metadata:
       Parameters:
       - MatillionEC2InstanceType
     - Label:
-        default: Matillion RDS/Postgres Repository configuration
+        default: Matillion RDS/Postgres Repository configuration 
       Parameters:
       - PGMasterUsername
       - PGMasterUserPassword
@@ -37,7 +37,7 @@ Metadata:
       - PGAllocatedStorage
       - PGAutoMinorVersionUpgrade
     - Label:
-        default: Amazon Redshift Configuration
+        default: Amazon Redshift Configuration 
       Parameters:
       - NewRedshiftCluster
       - RedshiftDBName
@@ -56,10 +56,20 @@ Metadata:
       - RedshiftSnapshotIdentifier
       - RedshiftSnapshotAccountNumber
     - Label:
-        default: Quick Start configuration
+        default: Quick Start configuration 
       Parameters:
       - QSS3BucketName
       - QSS3KeyPrefix
+    - Label:
+        default: Mandatory tags 
+      Parameters:
+      - TagEnvironment
+      - TagName
+      - TagOwner
+      - TagTier       
+      - TagProjectCostCenter
+      - TagConfidentiality
+      - TagCompliance
     ParameterLabels:
       AcceptedEULA:
         default: Have you accepted EULA from AWS Marketplace link https://aws.amazon.com/marketplace/pp/B010ED5YF8?
@@ -77,10 +87,6 @@ Metadata:
         default: PostgreSQL DB Port
       PGMasterUsername:
         default: PostgreSQL Master Username
-      PrivateSubnet1:
-        default: Private Subnet 1
-      PrivateSubnet2:
-        default: Private Subnet 2 
       PGInstanceClass:
         default: PostgreSQL Instance Class
       PGAutoMinorVersionUpgrade:
@@ -197,20 +203,6 @@ Parameters:
     ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/16-28
     Default: 10.0.0.0/16
     Description: CIDR block for the VPC.
-    Type: String
-    
-  QSS3BucketName:
-    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
-    ConstraintDescription: "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
-    Default: aws-quickstart
-    Description: "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
-    Type: String
-    
-  QSS3KeyPrefix:
-    AllowedPattern: "^[0-9a-zA-Z-/]*$"
-    ConstraintDescription: "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
-    Default: quickstart-amazon-aurora/
-    Description: "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
     Type: String
     
   EnableBastion: 
@@ -396,6 +388,70 @@ Parameters:
     Type: String
     Description: "Enter existing S3 Bucket contains dataset. IAM role will be created and associated to the Redshift cluster with GET and LIST access to this bucket."
     
+  QSS3BucketName:
+    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
+    ConstraintDescription: "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Default: sudhig-cfn-templates
+    Description: "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Type: String
+    
+  QSS3KeyPrefix:
+    AllowedPattern: "^[0-9a-zA-Z-/]*$"
+    ConstraintDescription: "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Default: quickstart-amazon-redshift/
+    Description: "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Type: String
+    
+  TagName:
+    Type: String
+    Description: Unique friendly name as required by the your company tagging strategy document and will be added to tag.
+    Default: 'lab'
+  TagEnvironment:
+    Type: String
+    AllowedValues:
+      - Development
+      - test
+      - pre-prod
+      - Production
+    Description: The environment tag is used to designate the Environment Stage of the associated AWS resource.
+    Default: 'Development'
+  TagTier:
+    Type: String
+    AllowedValues:
+      - data
+      - web
+      - application
+    Description: The tier key is used to designate the functional tier of the associated AWS resource.
+    Default: 'data'
+  TagProjectCostCenter:
+    Type: String
+    Description: The TagProjectCostCenter tag is used to designate the cost center associated with the project of the given AWS resource.
+    AllowedPattern: "^[a-zA-Z0-9]+$"
+    Default: '12345'
+    ConstraintDescription:  provide a valid cost center
+  TagOwner:
+    Type: String
+    Description: The TagOwner tag is used to designate business owner(s) email address associated with the given AWS resource for sending outage or maintenance notifications
+  TagConfidentiality:
+    Type: String
+    Description: The TagConfidentiality tag is used to designate the confidentiality classification of the data that is associated with the resource.
+    AllowedValues:
+      - public
+      - private
+      - confidential
+      - pii/phi
+    Default: 'private'
+  TagCompliance:
+    Type: String
+    Description: The TagCompliance tag is used to specify the Compliance level for the AWS resource.
+    AllowedValues:
+      - hipaa
+      - sox
+      - fips
+      - other
+      - none
+    Default: 'none'
+    
 Conditions:
   GovCloudCondition: !Equals 
     - !Ref 'AWS::Region'
@@ -439,7 +495,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 
-        - https://sudhig-cfn-templates.s3.amazonaws.com/quickstart-aws-redshift/templates/matillion_dev.yml
+        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/matillion_dev.yml
         - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
       Parameters:
         MatillionEC2InstanceType: !Ref MatillionEC2InstanceType
@@ -473,25 +529,25 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 
-        - https://sudhig-cfn-templates.s3.amazonaws.com/quickstart-aws-redshift/templates/redshift-cluster.template.yml
+        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/redshift.template.yaml
         - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
       Parameters:
         ParentStackName: !Ref AWS::StackName
-        VPC:
-          Fn::GetAtt:
-          - VPCStack
-          - Outputs.VPCID
-        PrivateSubnet1:
+        Subnet1ID:
           Fn::GetAtt:
           - VPCStack
           - Outputs.PrivateSubnet1AID
-        PrivateSubnet2:
+        Subnet2ID:
           Fn::GetAtt:
           - VPCStack
           - Outputs.PrivateSubnet2AID
-        InboundTraffic: !Ref VPCCIDR
-        RedshiftDBName: !Ref RedshiftDBName
-        RedshiftDBPort: !Ref RedshiftDBPort
+        VPCID:
+          Fn::GetAtt:
+          - VPCStack
+          - Outputs.VPCID
+        RemoteAccessCIDR: !Ref VPCCIDR
+        DatabaseName: !Ref RedshiftDBName
+        RedshiftClusterPort: !Ref RedshiftDBPort
         NumberOfNodes: !Ref RedshiftNumberOfNodes
         NodeType: !Ref RedshiftNodeType
         MasterUsername: !Ref RedshiftMasterUsername
@@ -505,6 +561,14 @@ Resources:
         NotificationList: !Ref RedshiftNotificationList
         EnableLoggingToS3: !Ref RedshiftEnableLoggingToS3
         S3BucketForRedshiftIAMRole: !Ref RedshiftS3BucketForIAMRole
+        GlueCatalogDatabase: ''
+        TagConfidentiality: !Ref TagConfidentiality
+        TagName: !Ref TagName
+        TagEnvironment: !Ref TagEnvironment
+        TagTier: !Ref TagTier
+        TagProjectCostCenter: !Ref TagProjectCostCenter
+        TagOwner: !Ref TagOwner
+        TagCompliance: !Ref TagCompliance
         
   BastionStack:
     Condition: EnableBastionAccess
