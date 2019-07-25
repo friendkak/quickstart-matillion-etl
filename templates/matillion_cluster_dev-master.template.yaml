@@ -1,4 +1,4 @@
-Description: "This cloudformation template creates AWS VPC, Bastion host, Amazon Redshift and HA Matillion stacks."
+Description: "This cloudformation template creates AWS VPC, Bastion host, Amazon Redshift and Clustered Enterprise version of Matillion softwares."
 Metadata:
   LICENSE: EULA - Matillion ETL for Redshift
   AWS::CloudFormation::Interface:
@@ -76,6 +76,16 @@ Metadata:
       Parameters:
       - QSS3BucketName
       - QSS3KeyPrefix
+    - Label:
+        default: Mandatory Tags
+      Parameters:
+      - TagEnvironment
+      - TagName
+      - TagOwner
+      - TagTier       
+      - TagProjectCostCenter
+      - TagConfidentiality
+      - TagCompliance
     ParameterLabels:
       AcceptedEULA:
         default: Have you accepted EULA from AWS Marketplace link https://aws.amazon.com/marketplace/pp/B010ED5YF8?
@@ -95,10 +105,6 @@ Metadata:
         default: PostgreSQL DB Port
       PGMasterUsername:
         default: PostgreSQL Master Username
-      PrivateSubnet1:
-        default: Private Subnet 1
-      PrivateSubnet2:
-        default: Private Subnet 2 
       PGInstanceClass:
         default: PostgreSQL Instance Class
       PGAutoMinorVersionUpgrade:
@@ -501,6 +507,56 @@ Parameters:
     Description: "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
     Type: String
     
+  TagName:
+    Type: String
+    Description: Unique friendly name as required by the your company tagging strategy document and will be added to tag.
+    Default: 'lab'
+  TagEnvironment:
+    Type: String
+    AllowedValues:
+      - Development
+      - test
+      - pre-prod
+      - Production
+    Description: The environment tag is used to designate the Environment Stage of the associated AWS resource.
+    Default: 'Development'
+  TagTier:
+    Type: String
+    AllowedValues:
+      - data
+      - web
+      - application
+    Description: The tier key is used to designate the functional tier of the associated AWS resource.
+    Default: 'data'
+  TagProjectCostCenter:
+    Type: String
+    Description: The TagProjectCostCenter tag is used to designate the cost center associated with the project of the given AWS resource.
+    AllowedPattern: "^[a-zA-Z0-9]+$"
+    Default: '12345'
+    ConstraintDescription:  provide a valid cost center
+  TagOwner:
+    Type: String
+    Description: The TagOwner tag is used to designate business owner(s) email address associated with the given AWS resource for sending outage or maintenance notifications
+  TagConfidentiality:
+    Type: String
+    Description: The TagConfidentiality tag is used to designate the confidentiality classification of the data that is associated with the resource.
+    AllowedValues:
+      - public
+      - private
+      - confidential
+      - pii/phi
+    Default: 'private'
+  TagCompliance:
+    Type: String
+    Description: The TagCompliance tag is used to specify the Compliance level for the AWS resource.
+    AllowedValues:
+      - hipaa
+      - sox
+      - fips
+      - other
+      - none
+    Default: 'none'
+    
 Conditions:
   GovCloudCondition: !Equals 
     - !Ref 'AWS::Region'
@@ -595,25 +651,25 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 
-        - https://sudhig-cfn-templates.s3.amazonaws.com/quickstart-aws-redshift/templates/redshift-cluster.template.yml
+        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/redshift.template.yaml
         - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
       Parameters:
         ParentStackName: !Ref AWS::StackName
-        PrivateSubnet1:
+        Subnet1ID:
           Fn::GetAtt:
           - VPCStack
           - Outputs.PrivateSubnet1AID
-        PrivateSubnet2:
+        Subnet2ID:
           Fn::GetAtt:
           - VPCStack
           - Outputs.PrivateSubnet2AID
-        VPC:
+        VPCID:
           Fn::GetAtt:
           - VPCStack
           - Outputs.VPCID
-        InboundTraffic: !Ref VPCCIDR
-        RedshiftDBName: !Ref RedshiftDBName
-        RedshiftDBPort: !Ref RedshiftDBPort
+        RemoteAccessCIDR: !Ref VPCCIDR
+        DatabaseName: !Ref RedshiftDBName
+        RedshiftClusterPort: !Ref RedshiftDBPort
         NumberOfNodes: !Ref RedshiftNumberOfNodes
         NodeType: !Ref RedshiftNodeType
         MasterUsername: !Ref RedshiftMasterUsername
@@ -627,6 +683,14 @@ Resources:
         NotificationList: !Ref RedshiftNotificationList
         EnableLoggingToS3: !Ref RedshiftEnableLoggingToS3
         S3BucketForRedshiftIAMRole: !Ref RedshiftS3BucketForIAMRole
+        GlueCatalogDatabase: ''
+        TagConfidentiality: !Ref TagConfidentiality
+        TagName: !Ref TagName
+        TagEnvironment: !Ref TagEnvironment
+        TagTier: !Ref TagTier
+        TagProjectCostCenter: !Ref TagProjectCostCenter
+        TagOwner: !Ref TagOwner
+        TagCompliance: !Ref TagCompliance
         
   BastionStack:
     Condition: EnableBastionAccess
