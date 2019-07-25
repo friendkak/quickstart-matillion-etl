@@ -684,6 +684,8 @@ Resources:
         EnableLoggingToS3: !Ref RedshiftEnableLoggingToS3
         S3BucketForRedshiftIAMRole: !Ref RedshiftS3BucketForIAMRole
         GlueCatalogDatabase: ''
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
         TagConfidentiality: !Ref TagConfidentiality
         TagName: !Ref TagName
         TagEnvironment: !Ref TagEnvironment
