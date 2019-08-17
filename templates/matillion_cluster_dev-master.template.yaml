@@ -282,7 +282,6 @@ Parameters:
     Description: Postgres Password. Must contain one upper and one lower case letter
       and one digit but not quotes, slashes, @ or spaces.
     NoEcho: true
-    Default: 'Welcome123'
     Type: String
     
   PGDBPort:
@@ -328,50 +327,61 @@ Parameters:
   MatillionRealmConName:
     Description: 'Connection Name, Example: administrator@INTERNAL.DOMAIN.COM'
     Type: String
+    Default: ''
     
   MatillionRealmConPass:
     Description: "The password for the connection username used for initial bind."
     NoEcho: true
     Type: String
+    Default: ''
     
   MatillionRealmConURL:
     Description: 'The URL to your directory server, Example: ldap://10.10.10.254:389'
     Type: String
+    Default: ''
     
   MatillionRealmMETLAPIRole:
     Description: "The name of an existing group in the directory server whose users will be allowed to administer Matillion. Role names are case-sensitive."
     Type: String
+    Default: ''
     
   MatillionRealmMETLAdminRole:
     Description: "The name of an existing group in the directory server whose users will be allowed to administer Matillion. Role names are case-sensitive."
     Type: String
+    Default: ''
     
   MatillionRealmMETLRole:
     Description: "The name of an existing group in the directory server whose users will be allowed to login. Role names are case-sensitive."
     Type: String
+    Default: ''
     
   MatillionRealmRoleBase:
     Description: 'The subtree below which groups are stored in the directory tree,
       Example: cn=Groups,dc=INTERNAL,dc=domain,dc=com'
     Type: String
+    Default: ''
     
   MatillionRealmRoleName:
     Description: 'The LDAP attribute used to identify a group or role, Example: cn'
     Type: String
+    Default: ''
     
   MatillionRealmRoleSearch:
     Description: 'The LDAP attribute to use to identify groups or roles, Example:
       member={0}'
     Type: String
+    Default: ''
     
   MatillionRealmUserBase:
     Description: 'The subtree below which users are stored in the directory tree,
       Example: cn=Users,dc=INTERNAL,dc=domain,dc=com'
     Type: String
+    Default: ''
     
   MatillionRealmUserSearch:
     Description: 'The LDAP attribute to use for identifying users, Example: sAMAccountName={0}'
     Type: String
+    Default: ''
     
   MatillionRealmUserSubtree:
     AllowedValues:
@@ -437,7 +447,6 @@ Parameters:
     NoEcho: 'true'
     MinLength: '1'
     MaxLength: '41'
-    Default: 'Welcome123'
     AllowedPattern: >-
      ^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?!._*[@/\\\"']).*$
     ConstraintDescription: must contain only alphanumeric characters.
@@ -469,10 +478,12 @@ Parameters:
   RedshiftSnapshotIdentifier:
     Description: Leave it blank for new cluster. Enter Snapshot Identifier only if you want to restore from snapshot. 
     Type: String
+    Default: ''
     
   RedshiftSnapshotAccountNumber:
     Description: "AWS Account number of Snapshot (Leave it blank, if snapshot is created in current AWS Account)"
     Type: String
+    Default: ''
     
   RedshiftNotificationList:
     Type: String
@@ -492,7 +503,8 @@ Parameters:
   RedshiftS3BucketForIAMRole:
     Type: String
     Description: "Enter existing S3 Bucket contains dataset. IAM role will be created and associated to the Redshift cluster with GET and LIST access to this bucket."
-    
+    Default: ''
+
   QSS3BucketName:
     AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
     ConstraintDescription: "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
@@ -511,6 +523,7 @@ Parameters:
     Type: String
     Description: Unique friendly name as required by the your company tagging strategy document and will be added to tag.
     Default: 'lab'
+  
   TagEnvironment:
     Type: String
     AllowedValues:
@@ -520,6 +533,7 @@ Parameters:
       - Production
     Description: The environment tag is used to designate the Environment Stage of the associated AWS resource.
     Default: 'Development'
+  
   TagTier:
     Type: String
     AllowedValues:
@@ -528,15 +542,18 @@ Parameters:
       - application
     Description: The tier key is used to designate the functional tier of the associated AWS resource.
     Default: 'data'
+  
   TagProjectCostCenter:
     Type: String
     Description: The TagProjectCostCenter tag is used to designate the cost center associated with the project of the given AWS resource.
     AllowedPattern: "^[a-zA-Z0-9]+$"
     Default: '12345'
     ConstraintDescription:  provide a valid cost center
+
   TagOwner:
     Type: String
     Description: The TagOwner tag is used to designate business owner(s) email address associated with the given AWS resource for sending outage or maintenance notifications
+  
   TagConfidentiality:
     Type: String
     Description: The TagConfidentiality tag is used to designate the confidentiality classification of the data that is associated with the resource.
@@ -546,6 +563,7 @@ Parameters:
       - confidential
       - pii/phi
     Default: 'private'
+  
   TagCompliance:
     Type: String
     Description: The TagCompliance tag is used to specify the Compliance level for the AWS resource.

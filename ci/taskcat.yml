@@ -19,9 +19,9 @@ global:
   reporting: true
  
 tests:
-  quickstart-matillion-etlt1:
-    parameter_input: quickstart-matillion-etl-example-params1.json
-    template_file: quickstart-matillion-etl-example1.template
-  quickstart-matillion-etlt2:
-    parameter_input: quickstart-matillion-etl-example-params2.json
-    template_file: quickstart-matillion-etl-example2.template
+  cluster-test:
+    parameter_input: cluster_param.json
+    template_file: matillion_cluster_dev-master.template.yaml
+  single-instance-test:
+    parameter_input: single_instance_param.json
+    template_file: matillion_dev-master.template.yaml
