@@ -472,12 +472,13 @@ Parameters:
   TagEnvironment:
     Type: String
     AllowedValues:
-      - Development
+      - dev
       - test
       - pre-prod
-      - Production
+      - prod
+      - none
+    Default: none
     Description: The environment tag is used to designate the Environment Stage of the associated AWS resource.
-    Default: 'test'
     
 Conditions:
   GovCloudCondition: !Equals 
@@ -553,7 +554,6 @@ Resources:
         PGAllocatedStorage: !Ref PGAllocatedStorage
         PGAutoMinorVersionUpgrade: 'true'
         NotificationList: !Ref NotificationList
-        NotificationList: !Ref NotificationList
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         
@@ -596,13 +596,8 @@ Resources:
         GlueCatalogDatabase: ''
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
-        TagConfidentiality: 'private'
         TagName: !Ref TagName
         TagEnvironment: !Ref TagEnvironment
-        TagTier: 'data'
-        TagProjectCostCenter: 'qsXXXX'
-        TagOwner: !Ref NotificationList
-        TagCompliance: 'none'
         
   BastionStack:
     Condition: EnableBastionAccess

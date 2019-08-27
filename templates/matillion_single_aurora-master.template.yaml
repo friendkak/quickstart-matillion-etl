@@ -147,16 +147,6 @@ Metadata:
         default: Environment
       TagName:
         default: Unique friendly name
-      TagTier:
-        default: Functional tier
-      TagOwner:
-        default: Designate business owner's email  
-      TagCompliance:
-        default: Compliance classifier
-      TagConfidentiality:
-        default: Confidentiality classifier
-      TagProjectCostCenter:
-        default: Project cost center
 Parameters:
     
   AcceptedEULA: 
@@ -461,12 +451,13 @@ Parameters:
   TagEnvironment:
     Type: String
     AllowedValues:
+      - dev
       - test
       - pre-prod
-      - Production
-      - Development
+      - prod
+      - none
+    Default: none
     Description: The environment tag is used to designate the Environment Stage of the associated AWS resource.
-    Default: 'test'
     
 Conditions:
   GovCloudCondition: !Equals 
@@ -587,13 +578,8 @@ Resources:
         GlueCatalogDatabase: ''
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
-        TagConfidentiality: 'private'
         TagName: !Ref TagName
         TagEnvironment: !Ref TagEnvironment
-        TagTier: 'data'
-        TagProjectCostCenter: 'qsXXXX'
-        TagOwner: !Ref NotificationList
-        TagCompliance: 'none'
         
   BastionStack:
     Condition: EnableBastionAccess
