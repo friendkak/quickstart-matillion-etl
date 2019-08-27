@@ -12,10 +12,10 @@ Metadata:
       Parameters:
       - AvailabilityZones
       - VPCCIDR
-      - PrivateSubnet1CIDR
-      - PrivateSubnet2CIDR
       - PublicSubnet1CIDR
       - PublicSubnet2CIDR
+      - PrivateSubnet1CIDR
+      - PrivateSubnet2CIDR
     - Label:
         default: Linux bastion configuration
       Parameters:
@@ -30,17 +30,17 @@ Metadata:
         default: Matillion EC2 Instance and ALB Configuration 
       Parameters:
       - MatillionEC2InstanceType
+      - NotificationList
       - LBDnsName
     - Label:
-        default: Matillion RDS/Postgres Repository configuration
+        default: Matillion Aurora/PostgreSQL configuration 
       Parameters:
       - PGMasterUsername
       - PGMasterUserPassword
       - PGDBPort
       - PGDBName
+      - PGEngineVersion
       - PGInstanceClass
-      - PGAllocatedStorage
-      - PGAutoMinorVersionUpgrade
     - Label:
         default: Amazon Redshift Configuration
       Parameters:
@@ -56,7 +56,6 @@ Metadata:
       - RedshiftEncryptionAtRest
       - Redshiftkmskey
       - RedshiftS3BucketForIAMRole
-      - RedshiftNotificationList
       - RedshiftMaintenancewindow
       - RedshiftSnapshotIdentifier
       - RedshiftSnapshotAccountNumber
@@ -81,7 +80,7 @@ Metadata:
       - QSS3BucketName
       - QSS3KeyPrefix
     - Label:
-        default: Mandatory Tags
+        default: Tag identifiers
       Parameters:
       - TagEnvironment
       - TagName
@@ -106,8 +105,6 @@ Metadata:
         default: PostgreSQL Master Username
       PGInstanceClass:
         default: PostgreSQL Instance Class
-      PGAutoMinorVersionUpgrade:
-         default: Postgres auto minor version upgrade 
       EnableBastion:
         default: Create bastion stack
       BastionInstanceType:
@@ -154,7 +151,7 @@ Metadata:
         default: KMS Key for Encryption at rest
       RedshiftS3BucketForIAMRole:
         default: Amazon S3 Bucket for Redshift IAM Role 
-      RedshiftNotificationList:
+      NotificationList:
         default: Email address for SNS notification
       RedshiftMaintenancewindow:
         default: Redshift Maintenance window
@@ -186,6 +183,22 @@ Metadata:
         default: User Search
       MatillionRealmUserSubtree:
         default: User Subtree
+      TagEnvironment:
+        default: Environment
+      TagName:
+        default: Unique friendly name
+      TagTier:
+        default: Functional tier
+      TagOwner:
+        default: Designate business owner's email  
+      TagCompliance:
+        default: Compliance classifier
+      TagConfidentiality:
+        default: Confidentiality classifier
+      TagProjectCostCenter:
+        default: Project cost center
+      AlternativeInitializationScript:
+        default: Custom Bootstrap Script
         
 Parameters:
     
@@ -311,61 +324,6 @@ Parameters:
     Description: 'Load Balancer DNS Name Prefix, Example: [matillion]-1731869672.eu-west-1.elb.amazonaws.com'
     Type: String
     
-  PGDBName:
-    AllowedPattern: "([a-z]|[0-9])+"
-    Default: matillion
-    Description: The Postgres database in which Matillion will store its metadata
-      repository.
-    Type: String
-    
-  PGMasterUserPassword:
-    AllowedPattern: "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,64}$"
-    Description: Postgres Password. Must contain one upper and one lower case letter
-      and one digit but not quotes, slashes, @ or spaces.
-    NoEcho: true
-    Default: 'Welcome123'
-    Type: String
-    
-  PGDBPort:
-    Default: '8201'
-    Description: Specify the TCP/IP port that the DB instance will use for application
-      connections.
-    MaxValue: 65535
-    MinValue: 1150
-    Type: Number
-    
-  PGMasterUsername:
-    AllowedPattern: "^[a-zA-Z]{1}[a-z0-9]*"
-    Default: matillion
-    Description: Initial Postgres Username. This user will be an admin role.
-    Type: String
-    
-  PGInstanceClass:
-    AllowedValues:
-    - db.t2.medium
-    - db.t2.large
-    - db.m4.large
-    - db.m4.xlarge
-    Default: db.m4.large
-    Description: "Postgres Database instance class"
-    Type: String
-    
-  PGAutoMinorVersionUpgrade: 
-    AllowedValues: 
-      - "true"
-      - "false"
-    Default: "false"
-    Description: "Select true to set up auto minor version upgrade."
-    Type: String
-    
-  PGAllocatedStorage:
-    ConstraintDescription: must be between 5 and 1024Gb.
-    Default: '20'
-    Description: The size of the database (Gb)
-    MaxValue: '1024'
-    MinValue: '5'
-    Type: Number
-    
   MatillionRealmConName:
     Description: 'Connection Name, Example: administrator@INTERNAL.DOMAIN.COM'
     Type: String
@@ -422,16 +380,73 @@ Parameters:
     Description: "Sets the scope of the search. Select true if you wish to search the entire subtree, rooted at the 'User Base' entry. Selecting false (default) requests a lone top-level search."
     Type: String
     
+  PGDBName:
+    AllowedPattern: "([a-z]|[0-9])+"
+    Default: matillion
+    Description: The Postgres database in which Matillion will store its metadata
+      repository.
+    Type: String
+    
+  PGMasterUserPassword:
+    AllowedPattern: '(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*'
+    Description: "Min 8 chars. Must include 1 uppercase, 1 lowercase, 1 number, 1 (non / @ \" ') symbol"
+    NoEcho: true
+    Type: String
+    
+  PGDBPort:
+    Default: '8201'
+    Description: Specify the TCP/IP port that the DB instance will use for application
+      connections.
+    MaxValue: 65535
+    MinValue: 1150
+    Type: Number
+    
+  PGMasterUsername:
+    AllowedPattern: "^[a-zA-Z]{1}[a-z0-9]*"
+    Default: matillion
+    Description: Initial Postgres Username. This user will be an admin role.
+    Type: String
+    
+  PGEngineVersion:
+    Description: Select Database Engine Version
+    Type: String
+    Default: 9.6.12
+    AllowedValues:
+      - 9.6.9
+      - 9.6.11
+      - 9.6.12
+      - 10.5
+      - 10.6
+      - 10.7
+    
+  PGInstanceClass:
+    AllowedValues:
+      - db.r5.large
+      - db.r5.xlarge
+      - db.r5.2xlarge
+      - db.r5.4xlarge
+      - db.r5.12xlarge
+      - db.r5.24xlarge
+      - db.r4.large
+      - db.r4.xlarge
+      - db.r4.2xlarge
+      - db.r4.4xlarge
+      - db.r4.8xlarge
+      - db.r4.16xlarge
+    Default: db.r5.large
+    Description: Database instance class
+    Type: String
+    
   EnableRedshiftStack: 
     AllowedValues: 
       - "true"
       - "false"
     Default: "true"
-    Description: "If true, a redshift cluster stack will be created."
+    Description: Enables or disables creation of a Redshift stack. If true, a Redshift stack will be created. 
     Type: String
     
   RedshiftDBName:
-    Description: The name of the first database to be created when the redshift cluster
+    Description: The name of the first database to be created when the cluster is created.
       is created
     Type: String
     Default: matillion
@@ -439,21 +454,17 @@ Parameters:
     ConstraintDescription: must contain a-z or 0-9 only.
     
   RedshiftDBPort:
-    Description: 'The port that Redshift will listen on and that will be allowed through
-      the Security Group. '
+    Description: The port number on which the cluster accepts incoming connections.
     Type: String
     Default: '8200'
     
   RedshiftNumberOfNodes:
-    Description: The nuber of compute nodes in the redshift cluster.  When cluster
-      type is specified as single-node, the NumberOfNodes parameter should be specified
-      as 1.  When cluster type is specified as multi-node, the NumberOfNodes parameter
-      should be greater than 1
+    Description: The number of compute nodes in the cluster. For multi-node clusters, the NumberOfNodes parameter must be greater than 1.
     Type: Number
     Default: '2'
     
   RedshiftNodeType:
-    Description: The node type to be provisioned for the redshift cluster
+    Description: The type of node to be provisioned
     Type: String
     Default: dc2.large
     AllowedValues:
@@ -464,37 +475,34 @@ Parameters:
     ConstraintDescription: must be a valid RedShift node type.
     
   RedshiftMasterUsername:
-    Description: The user name associated with the master user account for the redshift
-      cluster that is being created
+    Description: The user name that is associated with the master user account for the cluster that is being created.
     Type: String
     Default: matillion
     AllowedPattern: "([a-z])([a-z]|[0-9])*"
     ConstraintDescription: must start with a-z and contain only a-z or 0-9.
     
   RedshiftMasterUserPassword:
-    Description: 'The password associated with the master user account for the redshift
-      cluster that is being created. '
+    AllowedPattern: '(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*'
+    Description: "Min 8 chars. Must include 1 uppercase, 1 lowercase, 1 number, 1 (non / @ \" ') symbol"
+    NoEcho: true
     Type: String
-    NoEcho: 'true'
-    MinLength: '1'
-    MaxLength: '41'
-    Default: 'Welcome123'
-    AllowedPattern: >-
-     ^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?!._*[@/\\\"']).*$
-    ConstraintDescription: must contain only alphanumeric characters.
+    MinLength: '8'
+    MaxLength: '64'
+    ConstraintDescription: >-
+       Enter alphanumeric password for the master user. The password must contain 8 to 64 printable ASCII characters, excluding: /, ", \'', \ and @. It must contain one uppercase letter, one lowercase letter, and one number.
   
   RedshiftMaintenancewindow:
-    Description: Maintenance Window for Redshift Cluster
+    Description: The maintenance window for the Redshift cluster.
     Type: String
     Default: 'sat:05:00-sat:05:30'
         
   RedshiftMaxConcurrentCluster:
-    Description: Maximum Concurrency Scaling Redshift Clusters
+    Description: The maximum number of concurrency scaling Redshift clusters.
     Type: String
     Default: '1'
     
   RedshiftEncryptionAtRest:
-    Description: "Do you want to encrypt database at rest?"
+    Description: Enables or disables encryption at rest of the Redshift database.
     Type: String
     Default: 'false'
     AllowedValues:
@@ -503,22 +511,24 @@ Parameters:
     ConstraintDescription: must be true or false.
   
   Redshiftkmskey:
-    Description: Existing KMS key ID
+    Description: The existing KMS key ID for encrypting Redshift database at-rest.
     Type: String
     Default: ''
     
   RedshiftSnapshotIdentifier:
-    Description: Leave it blank for new cluster. Enter Snapshot Identifier only if you want to restore from snapshot. 
+    Description: The Redshift snapshot identifier. Leave this blank for a new cluster. Enter the snapshot identifier, only if you want to restore from a snapshot.
     Type: String
+    Default: ''
     
   RedshiftSnapshotAccountNumber:
-    Description: "AWS Account number of Snapshot (Leave it blank, if snapshot is created in current AWS Account)"
+    Description: The AWS account number where the Redshift snapshot was created. Leave this blank, if the snapshot was created in the current AWS account.
     Type: String
+    Default: ''
     
-  RedshiftNotificationList:
+  NotificationList:
     Type: String
-    Description: The Email notification list is used to configure a SNS topic for sending cloudwatch alarm and event notifications
-    Default: "abc@xyz.com"
+    Description: The email notification list that is used to configure an SNS topic for sending CloudWatch alarm and event notifications.
+    Default: "ops@company.com"
     AllowedPattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
     ConstraintDescription: provide a valid email address.
     
@@ -528,11 +538,12 @@ Parameters:
     AllowedValues:
       - true
       - false
-    Description: "Do you want to enable logging to S3 bucket?"
+    Description: Enables or disables logging to an S3 bucket.  To enable logging, select True.
     
   RedshiftS3BucketForIAMRole:
     Type: String
-    Description: "Enter existing S3 Bucket contains dataset. IAM role will be created and associated to the Redshift cluster with GET and LIST access to this bucket."
+    Description: The existing Amazon S3 bucket. An IAM role will be created and associated to the Redshift cluster with GET and LIST access to this bucket.
+    Default: ''
     
   QSS3BucketName:
     AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
@@ -551,16 +562,16 @@ Parameters:
   TagName:
     Type: String
     Description: Unique friendly name as required by the your company tagging strategy document and will be added to tag.
-    Default: 'lab'
+    Default: 'matillion-qs'
   TagEnvironment:
     Type: String
     AllowedValues:
-      - Development
       - test
       - pre-prod
       - Production
+      - Development
     Description: The environment tag is used to designate the Environment Stage of the associated AWS resource.
-    Default: 'Development'
+    Default: 'test'
     
 Conditions:
   GovCloudCondition: !Equals 
@@ -600,15 +611,14 @@ Resources:
         PublicSubnet2CIDR: !Ref PublicSubnet2CIDR
         VPCCIDR: !Ref VPCCIDR
         
-  MatillionHAStack:
+  MatillionStack:
     Condition: IsAcceptedEULA
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 
-        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/matillion_cluster_dev.yml
+        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/matillion_cluster_dev_aurora.yaml
         - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
       Parameters:
-        ParentStackName: !Ref AWS::StackName
         MatillionEC2InstanceType: !Ref MatillionEC2InstanceType
         KeyPairName: !Ref KeyPairName
         VPCID:
@@ -630,14 +640,19 @@ Resources:
           - VPCStack
           - Outputs.PrivateSubnet2AID
         LBDnsName: !Ref LBDnsName
+        AcceptedEULA: !Ref AcceptedEULA
         RemoteAccessCIDR: !Ref RemoteAccessCIDR
         PGMasterUsername: !Ref PGMasterUsername
         PGMasterUserPassword: !Ref PGMasterUserPassword
         PGDBPort: !Ref PGDBPort
         PGDBName: !Ref PGDBName
+        PGEngineVersion: !Ref PGEngineVersion
         PGInstanceClass: !Ref PGInstanceClass
-        PGAllocatedStorage: !Ref PGAllocatedStorage
-        PGAutoMinorVersionUpgrade: !Ref PGAutoMinorVersionUpgrade
+        PGAutoMinorVersionUpgrade: 'true'
+        NotificationList: !Ref NotificationList
+        TagEnvironment: !Ref TagEnvironment
+        QSS3BucketName: !Ref QSS3BucketName
+        QSS3KeyPrefix: !Ref QSS3KeyPrefix
         MatillionRealmConName: !Ref MatillionRealmConName
         MatillionRealmConPass: !Ref MatillionRealmConPass
         MatillionRealmConURL: !Ref MatillionRealmConURL
@@ -684,7 +699,7 @@ Resources:
         kmskey: !Ref Redshiftkmskey
         SnapshotIdentifier: !Ref RedshiftSnapshotIdentifier
         SnapshotAccountNumber: !Ref RedshiftSnapshotAccountNumber
-        NotificationList: !Ref RedshiftNotificationList
+        NotificationList: !Ref NotificationList
         EnableLoggingToS3: !Ref RedshiftEnableLoggingToS3
         S3BucketForRedshiftIAMRole: !Ref RedshiftS3BucketForIAMRole
         GlueCatalogDatabase: ''
@@ -695,7 +710,7 @@ Resources:
         TagEnvironment: !Ref TagEnvironment
         TagTier: 'data'
         TagProjectCostCenter: 'qsXXXX'
-        TagOwner: !Ref RedshiftNotificationList
+        TagOwner: !Ref NotificationList
         TagCompliance: 'none'
         
   BastionStack:
@@ -724,3 +739,24 @@ Resources:
         AlternativeInitializationScript: !Ref AlternativeInitializationScript
         EnableX11Forwarding: !Ref EnableX11Forwarding
         EnableTCPForwarding: !Ref EnableTCPForwarding
+
+Outputs:
+  MatillionALBURL:
+    Description: Public Endpoint for Matillion Instance
+    Value:
+      Fn::GetAtt:
+      - MatillionStack
+      - Outputs.ALBURL
+  RDSJDBCConnectionString:
+    Description: JDBC connection string for Matillion RDS/Postgres DB
+    Value:
+      Fn::GetAtt:
+      - MatillionStack
+      - Outputs.RDSJDBCConnectionString
+  RedshiftClusterEndpoint:
+    Condition: CreateRedshiftStack
+    Description: Redshift Cluster endpoint
+    Value:
+      Fn::GetAtt:
+      - RedshiftStack
+      - Outputs.RedshiftClusterEndpoint
