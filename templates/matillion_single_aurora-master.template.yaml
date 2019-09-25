@@ -547,7 +547,6 @@ Resources:
         PGDBName: !Ref PGDBName
         PGEngineVersion: !Ref PGEngineVersion
         PGInstanceClass: !Ref PGInstanceClass
-        PGAutoMinorVersionUpgrade: 'true'
         NotificationList: !Ref NotificationList
         TagEnvironment: !Ref TagEnvironment
         QSS3BucketName: !Ref QSS3BucketName
