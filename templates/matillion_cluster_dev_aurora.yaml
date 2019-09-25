@@ -786,8 +786,11 @@ Resources:
     
   MatillionALB:
     Properties:
-      Name:
-        Ref: LBDnsName
+      Name: 
+      Fn::Join:
+      - ''
+      - - !Ref LBDnsName
+        - !Sub ["${RootStack}", RootStack: !Select [0, !Split ['-', !Ref 'AWS::StackName']]]
       Scheme: internet-facing
       SecurityGroups:
       - Ref: MatillionALBSecurityGroup
@@ -840,6 +843,7 @@ Resources:
     
   MatillionRole:
     Properties:
+      RoleName: !Sub ["${RootStack}-MatillionRole", RootStack: !Select [0, !Split ['-', !Ref 'AWS::StackName']]]
       AssumeRolePolicyDocument:
         Statement:
         - Action:
@@ -969,7 +973,7 @@ Resources:
             Effect: Allow
             Resource: "*"
             Sid: CDCPermissions
-        PolicyName: MatillionRolePolicy
+        PolicyName: !Sub ["${RootStack}-MatillionRolePolicy", RootStack: !Select [0, !Split ['-', !Ref 'AWS::StackName']]]
     Type: AWS::IAM::Role
     
   MatillionTargetGroup:
