@@ -8,30 +8,32 @@ Metadata:
       Parameters:
       - AcceptedEULA
     - Label:
-        default: Matillion EC2 Instance Configuration 
-      Parameters:
-      - MatillionEC2InstanceType
-      - KeyPairName
-      - RemoteAccessCIDR
-    - Label:
-        default: Networking and Security Configuration
+        default: Networking and Security configuration
       Parameters:
       - VPCID
       - PublicSubnet1
       - PublicSubnet2
       - PrivateSubnet1
       - PrivateSubnet2
+      - RemoteAccessCIDR
     - Label:
-        default: Matillion Aurora/Postgres Repository Configuration
+        default: Matillion EC2 Instance configuration 
+      Parameters:
+      - MatillionEC2InstanceType
+      - KeyPairName
+    - Label:
+        default: Matillion Aurora/Postgres repository configuration
       Parameters:
       - PGEngineVersion
       - PGInstanceClass
+      - PGDBName
+      - PGDBPort
       - PGMasterUsername
       - PGMasterUserPassword
-      - PGDBPort
-      - PGDBName
-      - PGAutoMinorVersionUpgrade
       - NotificationList
+    - Label:
+        default: Tag identifiers
+      Parameters:
       - TagEnvironment
     - Label:
         default: AWS Quick Start configuration 
@@ -47,19 +49,17 @@ Metadata:
       KeyPairName:
         default: Keypair Name
       PGDBName:
-        default: Matillion Postgres Database Name
+        default: Aurora/Postgres Database Name
       PGDBPort:
-        default: Matillion Postgres Database Port
+        default: Aurora/Postgres Database Port
       PGMasterUsername:
-        default: Matillion Postgres Master Username
+        default: Aurora/Postgres Master Username
       PGMasterUserPassword:
-        default: Matillion Postgres Master Password
+        default: Aurora/Postgres Master Password
       PGEngineVersion:
-        default: Matillion Postgres Engine Version
+        default: Aurora/Postgres Engine Version
       PGInstanceClass:
-        default: Matillion Postgres Instance Class
-      PGAutoMinorVersionUpgrade:
-         default: Postgres auto minor version upgrade
+        default: Aurora/Postgres Instance Class
       NotificationList:
          default: Email address for SNS notifications
       PrivateSubnet1:
@@ -195,13 +195,6 @@ Parameters:
     Default: db.r5.large
     Description: Database instance class
     Type: String
-  PGAutoMinorVersionUpgrade: 
-    AllowedValues: 
-      - "true"
-      - "false"
-    Default: "true"
-    Description: "Select true to set up auto minor version upgrade."
-    Type: String
     
   QSS3BucketName:
     AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
@@ -220,10 +213,11 @@ Parameters:
   TagEnvironment:
     Type: String
     AllowedValues:
+      - dev
       - test
       - pre-prod
-      - Production
-      - Development
+      - prod
+      - none
     Description: The environment tag is used to designate the Environment Stage of the associated AWS resource.
     Default: 'test'
     
@@ -278,7 +272,7 @@ Resources:
         Subnet2ID: !Ref PrivateSubnet2
         VPCID: !Ref VPCID
         DBName: !Ref PGDBName
-        DBAutoMinorVersionUpgrade: !Ref PGAutoMinorVersionUpgrade
+        DBAutoMinorVersionUpgrade: 'true'
         DBAllocatedStorageEncrypted: 'true'
         DBBackupRetentionPeriod: '35'
         DBEngineVersion: !Ref PGEngineVersion
@@ -293,7 +287,9 @@ Resources:
         EnvironmentStage: !Ref TagEnvironment
         
   CDCRoleForDMS:
+    Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub ["${RootStack}-CDCForDMS", RootStack: !Select [0, !Split ['-', !Ref 'AWS::StackName']]]
       AssumeRolePolicyDocument:
         Statement:
         - Action:
@@ -312,10 +308,12 @@ Resources:
             Effect: Allow
             Resource: "*"
             Sid: CDCPermissionsForDMS
-        PolicyName: CDCPermissionsForDMS
-    Type: AWS::IAM::Role
+        PolicyName: !Sub ["${RootStack}-CDCPermissionsForDMS", RootStack: !Select [0, !Split ['-', !Ref 'AWS::StackName']]]
+    
   CDCRoleForLambda:
+    Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub ["${RootStack}-CDCForLambda", RootStack: !Select [0, !Split ['-', !Ref 'AWS::StackName']]]
       AssumeRolePolicyDocument:
         Statement:
         - Action:
@@ -336,8 +334,8 @@ Resources:
             Effect: Allow
             Resource: "*"
             Sid: CDCPermissionsForLambda
-        PolicyName: CDCPermissionsForLambda
-    Type: AWS::IAM::Role
+        PolicyName: !Sub ["${RootStack}-CDCPermissionsForLambda", RootStack: !Select [0, !Split ['-', !Ref 'AWS::StackName']]]
+    
   MatillionEc2Instance:
     DependsOn: AuroraStack
     Metadata:

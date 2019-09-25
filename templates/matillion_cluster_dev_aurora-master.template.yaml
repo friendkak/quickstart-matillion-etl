@@ -8,7 +8,7 @@ Metadata:
       Parameters:
       - AcceptedEULA
     - Label:
-        default: Network configuration
+        default: VPC Networking configuration
       Parameters:
       - AvailabilityZones
       - VPCCIDR
@@ -16,33 +16,33 @@ Metadata:
       - PublicSubnet2CIDR
       - PrivateSubnet1CIDR
       - PrivateSubnet2CIDR
+      - RemoteAccessCIDR
     - Label:
         default: Linux bastion configuration
       Parameters:
        - EnableBastion
-       - KeyPairName
-       - RemoteAccessCIDR
        - BastionInstanceType
        - EnableTCPForwarding
        - EnableX11Forwarding
        - AlternativeInitializationScript
     - Label:
-        default: Matillion EC2 Instance and ALB Configuration 
+        default: Matillion EC2 Instance and ALB configuration 
       Parameters:
       - MatillionEC2InstanceType
-      - NotificationList
+      - KeyPairName
       - LBDnsName
     - Label:
-        default: Matillion Aurora/PostgreSQL configuration 
+        default: Matillion Aurora/PostgreSQL repository configuration 
       Parameters:
-      - PGMasterUsername
-      - PGMasterUserPassword
-      - PGDBPort
-      - PGDBName
       - PGEngineVersion
       - PGInstanceClass
+      - PGDBName
+      - PGDBPort
+      - PGMasterUsername
+      - PGMasterUserPassword
+      - NotificationList
     - Label:
-        default: Amazon Redshift Configuration
+        default: Amazon Redshift configuration
       Parameters:
       - EnableRedshiftStack
       - RedshiftDBName
@@ -75,15 +75,15 @@ Metadata:
       - MatillionRealmMETLAdminRole
       - MatillionRealmMETLAPIRole
     - Label:
-        default: Quick Start configuration
-      Parameters:
-      - QSS3BucketName
-      - QSS3KeyPrefix
-    - Label:
         default: Tag identifiers
       Parameters:
       - TagEnvironment
       - TagName
+    - Label:
+        default: Quick Start configuration
+      Parameters:
+      - QSS3BucketName
+      - QSS3KeyPrefix
     ParameterLabels:
       AcceptedEULA:
         default: Have you accepted EULA from AWS Marketplace link https://aws.amazon.com/marketplace/pp/B010ED5YF8?
@@ -96,15 +96,17 @@ Metadata:
       LBDnsName:
         default: ALB DNS Prefix
       PGDBName:
-        default: Matillion PostgreSQL Database Name
+        default: Aurora/PostgreSQL Database Name
       PGMasterUserPassword:
-        default: PostgreSQL Master Password
+        default: Aurora/PostgreSQL Master Password
       PGDBPort:
-        default: PostgreSQL DB Port
+        default: Aurora/PostgreSQL Database Port
+      PGEngineVersion:
+        default: Aurora/Postgres Engine Version
       PGMasterUsername:
-        default: PostgreSQL Master Username
+        default: Aurora/PostgreSQL Master Username
       PGInstanceClass:
-        default: PostgreSQL Instance Class
+        default: Aurora/PostgreSQL Instance Class
       EnableBastion:
         default: Create bastion stack
       BastionInstanceType:
@@ -390,7 +392,7 @@ Parameters:
   PGDBName:
     AllowedPattern: "([a-z]|[0-9])+"
     Default: matillion
-    Description: The Postgres database in which Matillion will store its metadata
+    Description: Aurora/Postgres database name for Matillion repository
       repository.
     Type: String
     
@@ -480,19 +482,21 @@ Parameters:
     Description: The user name that is associated with the master user account for the cluster that is being created.
     Type: String
     Default: matillion
-    AllowedPattern: "([a-z])([a-z]|[0-9])*"
+    AllowedPattern: '([a-z])([a-z]|[0-9])*'
     ConstraintDescription: must start with a-z and contain only a-z or 0-9.
     
   RedshiftMasterUserPassword:
-    AllowedPattern: '(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*'
-    Description: "Min 8 chars. Must include 1 uppercase, 1 lowercase, 1 number, 1 (non / @ \" ') symbol"
+    Description: >-
+        The password that is associated with the master user account for the cluster that is being created. Must have at least 8 characters and no more than 64 characters, 
+        and must include 1 uppercase letter, 1 lowercase letter, 1 number, and 1 symbol (excluding / @ \" ').
     NoEcho: true
     Type: String
     MinLength: '8'
     MaxLength: '64'
+    AllowedPattern: '(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*'
     ConstraintDescription: >-
        Enter alphanumeric password for the master user. The password must contain 8 to 64 printable ASCII characters, excluding: /, ", \'', \ and @. It must contain one uppercase letter, one lowercase letter, and one number.
-  
+ 
   RedshiftMaintenancewindow:
     Description: The maintenance window for the Redshift cluster.
     Type: String
@@ -568,10 +572,11 @@ Parameters:
   TagEnvironment:
     Type: String
     AllowedValues:
-      - Development
+      - dev
       - test
       - pre-prod
-      - Production
+      - prod
+      - none
     Default: test
     Description: The environment tag is used to designate the Environment Stage of the associated AWS resource.
     
@@ -689,6 +694,7 @@ Resources:
           - VPCStack
           - Outputs.VPCID
         RemoteAccessCIDR: !Ref VPCCIDR
+        PubliclyAccessible: 'false'
         DatabaseName: !Ref RedshiftDBName
         RedshiftClusterPort: !Ref RedshiftDBPort
         NumberOfNodes: !Ref RedshiftNumberOfNodes
