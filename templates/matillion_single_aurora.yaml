@@ -476,6 +476,7 @@ Resources:
     
   MatillionRole:
     Properties:
+      RoleName: !Sub ["${RootStack}-MatillionRole", RootStack: !Select [0, !Split ['-', !Ref 'AWS::StackName']]]
       AssumeRolePolicyDocument:
         Statement:
         - Action:
@@ -605,7 +606,7 @@ Resources:
             Effect: Allow
             Resource: "*"
             Sid: CDCPermissions
-        PolicyName: MatillionRolePolicy
+        PolicyName: !Sub ["${RootStack}-MatillionRolePolicy", RootStack: !Select [0, !Split ['-', !Ref 'AWS::StackName']]]
     Type: AWS::IAM::Role
     
 Outputs:
