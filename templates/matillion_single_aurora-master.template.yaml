@@ -144,7 +144,7 @@ Metadata:
       RedshiftSnapshotAccountNumber:
         default: AWS account-ID of the Redshift Snapshot
       TagEnvironment:
-        default: Environment
+        default: test
       TagName:
         default: Unique friendly name
 Parameters:
@@ -260,6 +260,23 @@ Parameters:
     AllowedValues:
     - m5.large
     - m5.xlarge
+    - m3.medium
+    - t2.medium
+    - t3.medium
+    - m3.large
+    - m4.large
+    - m5.large
+    - r3.large
+    - r4.large
+    - m3.xlarge
+    - m4.xlarge
+    - m5.xlarge
+    - r3.xlarge
+    - r4.xlarge
+    - t3.xlarge
+    - x1e.xlarge
+    - m5.2xlarge
+    - r3.2xlarge
     Default: m5.large
     Description: Matillion instance(s) size. Larger sizes allow for running more concurrent
       tasks, See https://www.matillion.com/pricing/etl-for-redshift/ for more info.
@@ -297,12 +314,7 @@ Parameters:
     Type: String
     Default: 9.6.12
     AllowedValues:
-      - 9.6.9
-      - 9.6.11
       - 9.6.12
-      - 10.5
-      - 10.6
-      - 10.7
     
   PGInstanceClass:
     AllowedValues:
@@ -451,12 +463,11 @@ Parameters:
   TagEnvironment:
     Type: String
     AllowedValues:
-      - dev
+      - Development
       - test
       - pre-prod
-      - prod
-      - none
-    Default: none
+      - Production
+    Default: test
     Description: The environment tag is used to designate the Environment Stage of the associated AWS resource.
     
 Conditions:
