@@ -786,11 +786,11 @@ Resources:
     
   MatillionALB:
     Properties:
-      Name: 
-      Fn::Join:
-      - ''
-      - - !Ref LBDnsName
-        - !Sub ["${RootStack}", RootStack: !Select [0, !Split ['-', !Ref 'AWS::StackName']]]
+      Name:
+        Fn::Join:
+        - ''
+        - - !Ref LBDnsName
+          - !Sub ["${RootStack}", RootStack: !Select [0, !Split ['-', !Ref 'AWS::StackName']]]
       Scheme: internet-facing
       SecurityGroups:
       - Ref: MatillionALBSecurityGroup
