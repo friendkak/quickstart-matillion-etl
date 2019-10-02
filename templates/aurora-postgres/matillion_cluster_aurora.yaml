@@ -385,7 +385,7 @@ Resources:
         DBMasterUserPassword: !Ref PGMasterUserPassword
         DBPort: !Ref PGDBPort
         DBMultiAZ: 'true'
-        CustomDBSecurityGroup: !Ref MatillionEC2SecurityGroup
+        CustomDBSecurityGroup: ''
         EnableEventSubscription: 'true'
         NotificationList: !Ref NotificationList
         EnvironmentStage: !Ref TagEnvironment
