@@ -404,7 +404,7 @@ Parameters:
     Type: String
     
   PGDBPort:
-    Default: '8201'
+    Default: 8201
     Description: The port number on which the Aurora database accepts incoming connections.
       connections.
     MaxValue: 65535
