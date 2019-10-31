@@ -523,9 +523,6 @@ Resources:
         PublicSubnet1: !GetAtt 
           - VPCStack
           - Outputs.PublicSubnet1ID
-        PublicSubnet2: !GetAtt 
-          - VPCStack
-          - Outputs.PublicSubnet2ID
         PrivateSubnet1:
           Fn::GetAtt:
           - VPCStack
