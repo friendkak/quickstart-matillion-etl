@@ -18,7 +18,7 @@ Metadata:
       - PublicSubnet2CIDR
       - RemoteAccessCIDR
     - Label:
-        default: Matillion EC2 configuration 
+        default: Matillion EC2 instance configuration 
       Parameters:
       - MatillionEC2InstanceType
       - KeyPairName
@@ -88,16 +88,16 @@ Metadata:
         default: Matillion EC2 instance type
       KeyPairName:
         default: Key pair name
-      PGDBName:
-        default: Aurora/PostgreSQL database name
-      PGMasterUserPassword:
-        default: Aurora/PostgreSQL master password
-      PGMasterUsername:
-        default: Aurora/PostgreSQL master username
-      PGDBPort:
-        default: Aurora/PostgreSQL database port
       PGInstanceClass:
         default: Aurora/PostgreSQL instance class 
+      PGDBName:
+        default: Aurora/PostgreSQL database name
+      PGDBPort:
+        default: Aurora/PostgreSQL database port
+      PGMasterUsername:
+        default: Aurora/PostgreSQL master username
+      PGMasterUserPassword:
+        default: Aurora/PostgreSQL master password
       NotificationList:
         default: SNS notification email
       EnableBastion:
@@ -237,31 +237,6 @@ Parameters:
     Description: A public/private key pair, which allows you to connect securely to your instance after it launches. This is the key pair you created in your preferred AWS Region; see the Technical requirements section. If you do not have one in this AWS Region, create it before continuing.
     Type: 'AWS::EC2::KeyPair::KeyName'
     
-  PGDBName:
-    AllowedPattern: "([a-z]|[0-9])+"
-    Default: matillion
-    Description: The Aurora/PostgreSQLs database name for the Matillion repository repository.
-    Type: String
-    
-  PGMasterUsername:
-    AllowedPattern: "^[a-zA-Z]{1}[a-z0-9]*"
-    Default: matillion
-    Description: The user name that is associated with the master user account for the Aurora DB that is being created.
-    Type: String
-    
-  PGMasterUserPassword:
-    AllowedPattern: '(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*'
-    Description: The Aurora/PostgreSQL master user password. Min 8 chars, must include 1 uppercase, 1 lowercase, 1 number, 1 (non / @ " ') symbol.
-    NoEcho: true
-    Type: String
-    
-  PGDBPort:
-    Default: 8201
-    Description: The port number on which the Aurora database accepts incoming connections. 
-    MaxValue: 65535
-    MinValue: 1150
-    Type: Number
-    
   PGInstanceClass:
     AllowedValues:
       - db.r5.large
@@ -278,6 +253,31 @@ Parameters:
       - db.r4.16xlarge
     Default: db.r5.large
     Description: The Aurora/PostgreSQL database instance class.
+    Type: String
+    
+  PGDBName:
+    AllowedPattern: "([a-z]|[0-9])+"
+    Default: matillion
+    Description: The Aurora/PostgreSQLs database name for the Matillion repository repository.
+    Type: String
+    
+  PGDBPort:
+    Default: 8201
+    Description: The port number on which the Aurora database accepts incoming connections. 
+    MaxValue: 65535
+    MinValue: 1150
+    Type: Number
+    
+  PGMasterUsername:
+    AllowedPattern: "^[a-zA-Z]{1}[a-z0-9]*"
+    Default: matillion
+    Description: The user name that is associated with the master user account for the Aurora DB that is being created.
+    Type: String
+    
+  PGMasterUserPassword:
+    AllowedPattern: '(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*'
+    Description: The Aurora/PostgreSQL master user password. Min 8 chars, must include 1 uppercase, 1 lowercase, 1 number, 1 (non / @ " ') symbol.
+    NoEcho: true
     Type: String
     
   NotificationList:
