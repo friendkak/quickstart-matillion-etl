@@ -1,4 +1,4 @@
-Description: "This cloudformation template creates AWS VPC, Bastion host, Amazon Redshift and Matillion stacks."
+Description: "This cloudformation template creates AWS VPC, Bastion host, Amazon Redshift and Matillion software."
 Metadata:
   LICENSE: EULA - Matillion ETL for Redshift
   AWS::CloudFormation::Interface:
@@ -258,7 +258,7 @@ Parameters:
   PGDBName:
     AllowedPattern: "([a-z]|[0-9])+"
     Default: matillion
-    Description: The Aurora/PostgreSQLs database name for the Matillion repository repository.
+    Description: The Aurora/PostgreSQLs database name for the Matillion repository.
     Type: String
     
   PGDBPort:
@@ -345,8 +345,7 @@ Parameters:
     Type: String
     
   RedshiftDBName:
-    Description: The name of the first database to be created when the cluster is created.
-      is created
+    Description: The name of the first database to be created in the cluster is created.
     Type: String
     Default: matillion
     AllowedPattern: "([a-z]|[0-9])+"

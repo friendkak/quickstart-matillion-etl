@@ -1,5 +1,5 @@
 Description: 'Matillion ETL CloudFormation: Single-Node Enterprise with existing AWS
-  resources'
+  resources.'
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -152,7 +152,6 @@ Parameters:
     AllowedPattern: "([a-z]|[0-9])+"
     Default: matillion
     Description: The Aurora/PostgreSQL database name for the Matillion repository.
-      repository.
     Type: String  
   PGMasterUsername:
     AllowedPattern: "^[a-zA-Z]{1}[a-z0-9]*"
@@ -167,7 +166,6 @@ Parameters:
   PGDBPort:
     Default: 8201
     Description: The port number on which the Aurora/PostgreSQL database accepts incoming connections. 
-      connections.
     MaxValue: 65535
     MinValue: 1150
     Type: Number

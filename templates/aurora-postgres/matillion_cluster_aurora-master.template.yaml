@@ -1,4 +1,4 @@
-Description: "This cloudformation template creates AWS VPC, Bastion host, Amazon Redshift and Clustered Enterprise version of Matillion softwares."
+Description: "This cloudformation template creates AWS VPC, Bastion host, Amazon Redshift and Clustered Enterprise version of Matillion software."
 Metadata:
   LICENSE: EULA - Matillion ETL for Redshift
   AWS::CloudFormation::Interface:
@@ -397,7 +397,6 @@ Parameters:
     
   RedshiftDBName:
     Description: The name of the first database to be created when the cluster is created. 
-      is created
     Type: String
     Default: matillion
     AllowedPattern: "([a-z]|[0-9])+"
