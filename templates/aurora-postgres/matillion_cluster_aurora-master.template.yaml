@@ -85,7 +85,9 @@ Metadata:
       - QSS3KeyPrefix
     ParameterLabels:
       AcceptedEULA:
-        default: Have you accepted EULA from AWS Marketplace link https://aws.amazon.com/marketplace/pp/B010ED5YF8?
+        default: Accepted EULA from AWS Marketplace
+      AvailabilityZones:
+        default: Availability Zones
       VPCCIDR:
         default: VPC CIDR
       PrivateSubnet1CIDR:
@@ -381,7 +383,7 @@ Parameters:
   AlternativeInitializationScript:
     AllowedPattern: ^http.*|^$
     ConstraintDescription: URL must begin with http.
-    Description: Specifies the S3 location of the custom bootstrap script to run during bastion host setup.
+    Description: (Optional) Specifies the S3 location of the custom bootstrap script to run during bastion host setup.
     Default: ''
     Type: String
     
@@ -407,7 +409,7 @@ Parameters:
     Default: '8200'
     
   RedshiftNumberOfNodes:
-    Description: The number of compute nodes in the cluster. For multinode clusters, the NumberOfNodes parameter must be greater than 1.
+    Description: The number of compute nodes in the Amazon Redshift cluster.
     Type: Number
     Default: '2'
     
@@ -420,7 +422,7 @@ Parameters:
       - dc2.8xlarge
       - ds2.xlarge
       - ds2.8xlarge
-    ConstraintDescription: must be a valid Redshift node type.
+    ConstraintDescription: must be a valid Amazon Redshift node type.
     
   RedshiftMasterUsername:
     Description: The user name that is associated with the master user account for the cluster that is being created.
@@ -470,7 +472,7 @@ Parameters:
     Default: ''
  
   RedshiftMaintenancewindow:
-    Description: The maintenance window for the Redshift cluster.
+    Description: The maintenance window for the Amazon Redshift cluster.
     Type: String
     Default: 'sat:05:00-sat:05:30'
     
@@ -480,7 +482,7 @@ Parameters:
     Default: ''
     
   RedshiftSnapshotAccountNumber:
-    Description: The AWS account number where the Redshift snapshot was created. Leave this blank, if the snapshot was created in the current AWS account.
+    Description: The AWS account number where the Amazon Redshift snapshot was created. Leave this blank, if the snapshot was created in the current AWS account.
     Type: String
     Default: ''
     
@@ -494,7 +496,7 @@ Parameters:
     Type: String
     
   MatillionRealmConPass:
-    Description: "The password for the connection username used for initial bind."
+    Description: "The password for the connection user name used for the initial bind."
     NoEcho: true
     Type: String
     
@@ -511,7 +513,7 @@ Parameters:
     Type: String
     
   MatillionRealmMETLRole:
-    Description: "The name of an existing group in the directory server whose users will be allowed to login. Role names are case-sensitive."
+    Description: "The name of an existing group in the directory server whose users will be allowed to log in. Role names are case-sensitive."
     Type: String
     
   MatillionRealmRoleBase:
@@ -544,7 +546,7 @@ Parameters:
     
   TagName:
     Type: String
-    Description: 'Unique friendly name as required by the your company tagging strategy document and will be added to tag.The unique friendly name as required by your company’s tagging strategy document, which will be added to the tag.'
+    Description: 'The unique friendly name as required by your company’s tagging strategy document, and will be added to the tag.'
     Default: 'matillion-qs'
     
   TagEnvironment:
@@ -561,15 +563,15 @@ Parameters:
   QSS3BucketName:
     AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
     ConstraintDescription: "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
-    Default: sudhig-cfn-templates
-    Description: "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Default: 'aws-quickstart'
+    Description: "The S3 bucket name for the Quick Start assets. The Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
     Type: String
     
   QSS3KeyPrefix:
     AllowedPattern: "^[0-9a-zA-Z-/]*$"
     ConstraintDescription: "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
-    Default: quickstart-amazon-redshift/
-    Description: "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Default: 'quickstart-matillion-etl/'
+    Description: "The S3 key prefix for the Quick Start assets. The Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
     Type: String
     
 Conditions:

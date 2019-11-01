@@ -59,21 +59,21 @@ Metadata:
       VPCID:
         default: VPC CIDR
       PrivateSubnet1:
-        default: Private Subnet 1 CIDR
+        default: Private subnet 1 CIDR
       PrivateSubnet2:
-        default: Private Subnet 2 CIDR
+        default: Private subnet 2 CIDR
       PublicSubnet1:
-        default: Public Subnet 1 CIDR
+        default: Public subnet 1 CIDR
       PublicSubnet2:
-        default: Public Subnet 2 CIDR
+        default: Public subnet 2 CIDR
       RemoteAccessCIDR:
         default: Allowed external access CIDR
       AcceptedEULA:
-        default: Have you accepted EULA from AWS Marketplace link https://aws.amazon.com/marketplace/pp/B010ED5YF8?
+        default: Accepted EULA from AWS Marketplace
       MatillionEC2InstanceType:
         default: Matillion EC2 instance type
       KeyPairName:
-        default: Keypair name
+        default: Key pair name
       PGDBName:
         default: Aurora/PostgreSQL database name
       PGDBPort:
@@ -246,7 +246,7 @@ Parameters:
     Type: String
     
   MatillionRealmConPass:
-    Description: "The password for the connection username used for initial bind."
+    Description: "The password for the connection user name used for the initial bind."
     NoEcho: true
     Type: String
     
@@ -263,7 +263,7 @@ Parameters:
     Type: String
     
   MatillionRealmMETLRole:
-    Description: "The name of an existing group in the directory server whose users will be allowed to login. Role names are case-sensitive."
+    Description: "The name of an existing group in the directory server whose users will be allowed to log in. Role names are case-sensitive."
     Type: String
     
   MatillionRealmRoleBase:
@@ -308,15 +308,15 @@ Parameters:
   QSS3BucketName:
     AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
     ConstraintDescription: "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
-    Default: sudhig-cfn-templates
-    Description: "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Default: 'aws-quickstart'
+    Description: "The S3 bucket name for the Quick Start assets. The Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
     Type: String
     
   QSS3KeyPrefix:
     AllowedPattern: "^[0-9a-zA-Z-/]*$"
     ConstraintDescription: "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
-    Default: quickstart-amazon-redshift/
-    Description: "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Default: 'quickstart-matillion-etl/'
+    Description: "The S3 key prefix for the Quick Start assets. The Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
     Type: String
 
 Conditions:
