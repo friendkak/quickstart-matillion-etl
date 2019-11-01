@@ -1,5 +1,5 @@
 Description: 'Matillion ETL CloudFormation to deploy Clustered Enterprise with existing AWS
-  resources'
+  resources.'
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
@@ -56,6 +56,8 @@ Metadata:
       - QSS3BucketName
       - QSS3KeyPrefix
     ParameterLabels:
+      AcceptedEULA:
+        default: Accepted EULA from AWS Marketplace
       VPCID:
         default: VPC CIDR
       PrivateSubnet1:
@@ -68,8 +70,6 @@ Metadata:
         default: Public subnet 2 CIDR
       RemoteAccessCIDR:
         default: Allowed external access CIDR
-      AcceptedEULA:
-        default: Accepted EULA from AWS Marketplace
       MatillionEC2InstanceType:
         default: Matillion EC2 instance type
       KeyPairName:
