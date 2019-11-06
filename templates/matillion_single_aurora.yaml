@@ -206,37 +206,37 @@ Conditions:
 Mappings:
   RegionMap:
     ap-northeast-1:
-      AMI: ami-0417324631060315c
+      AMI: ami-0b834ac1f4458725a
     ap-northeast-2:
-      AMI: ami-095457b40dfba1246
+      AMI: ami-0617e54966f8418c3
     ap-south-1:
-      AMI: ami-0085ef1bb023d93d5
+      AMI: ami-04f2d3e6b06c7a2a7
     ap-southeast-1:
-      AMI: ami-0764f5731c0bf0fc1
+      AMI: ami-0cd0577d69650b3b7
     ap-southeast-2:
-      AMI: ami-04ae5286260fa019b
+      AMI: ami-00c302d632ea1f5d8
     ca-central-1:
-      AMI: ami-04a0243b56424c433
+      AMI: ami-0a147212dd9d0b6cf
     eu-central-1:
-      AMI: ami-0fe5b16e0c36af807
+      AMI: ami-07c8f039c733f8373
     eu-west-1:
-      AMI: ami-07270cb27dafcd9b8
+      AMI: ami-0afe0d3790938c1b2
     eu-west-2:
-      AMI: ami-0de9d2f8e3fd1d91d
+      AMI: ami-08aaec1387df69dfd
     eu-west-3:
-      AMI: ami-0635d4fbaf12fd39b
+      AMI: ami-029136484bb556cd5
     us-gov-west-1:
-      AMI: ami-3bbaf25a
+      AMI: ami-c33061a2
     sa-east-1:
-      AMI: ami-0e9f062d7600dfdb5
+      AMI: ami-0807eebadb1ffcdc7
     us-east-1:
-      AMI: ami-02d690b657fa3cc06
+      AMI: ami-0a53d2a14469297ba
     us-east-2:
-      AMI: ami-0fca2403098b186fa
+      AMI: ami-0c3e9584214017cfe
     us-west-1:
-      AMI: ami-09bcaec6d0fecbd60
+      AMI: ami-0bd4359d1d770c848
     us-west-2:
-      AMI: ami-08b4d9c6bcd5c3bf1
+      AMI: ami-06d709fe133ff94a8
       
 Resources:
 
