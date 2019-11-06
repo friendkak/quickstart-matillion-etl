@@ -1,0 +1,1035 @@
+Description: 'Matillion ETL CloudFormation to deploy Clustered Enterprise with existing AWS
+  resources.'
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: End User License Agreement (EULA) - Matillion ETL for Redshift
+      Parameters:
+      - AcceptedEULA
+    - Label:
+        default: VPC network configuration
+      Parameters:
+      - VPCID
+      - PrivateSubnet1
+      - PrivateSubnet2
+      - PublicSubnet1
+      - PublicSubnet2
+      - RemoteAccessCIDR
+    - Label:
+        default: Matillion EC2 Instance and Application Load Balancer configuration 
+      Parameters:
+      - MatillionEC2InstanceType
+      - KeyPairName
+      - LBDnsName
+    - Label:
+        default: Matillion Aurora/PostgreSQL repository configuration
+      Parameters:
+      - PGInstanceClass
+      - PGDBName
+      - PGDBPort
+      - PGMasterUsername
+      - PGMasterUserPassword
+      - NotificationList
+    - Label:
+        default: Matillion-ETL realm configuration
+      Parameters:
+      - MatillionRealmConName
+      - MatillionRealmConPass
+      - MatillionRealmConURL
+      - MatillionRealmUserBase
+      - MatillionRealmUserSearch
+      - MatillionRealmRoleBase
+      - MatillionRealmRoleName
+      - MatillionRealmRoleSearch
+      - MatillionRealmUserSubtree
+      - MatillionRealmMETLRole
+      - MatillionRealmMETLAdminRole
+      - MatillionRealmMETLAPIRole
+    - Label:
+        default: Tag identifiers
+      Parameters:
+      - TagEnvironment
+    - Label:
+        default: AWS Quick Start configuration 
+      Parameters:
+      - QSS3BucketName
+      - QSS3KeyPrefix
+    ParameterLabels:
+      AcceptedEULA:
+        default: Accepted EULA from AWS Marketplace
+      VPCID:
+        default: VPC CIDR
+      PrivateSubnet1:
+        default: Private subnet 1 CIDR
+      PrivateSubnet2:
+        default: Private subnet 2 CIDR
+      PublicSubnet1:
+        default: Public subnet 1 CIDR
+      PublicSubnet2:
+        default: Public subnet 2 CIDR
+      RemoteAccessCIDR:
+        default: Allowed external access CIDR
+      MatillionEC2InstanceType:
+        default: Matillion EC2 instance type
+      KeyPairName:
+        default: Key pair name
+      PGDBName:
+        default: Aurora/PostgreSQL database name
+      PGDBPort:
+        default: Aurora/PostgreSQL database port
+      PGMasterUsername:
+        default: Aurora/PostgreSQL master username
+      PGMasterUserPassword:
+        default: Aurora/PostgreSQL master password
+      PGInstanceClass:
+        default: Aurora/PostgreSQL instance class
+      LBDnsName:
+        default: Matillion ALB DNS prefix
+      NotificationList:
+         default: SNS notification email
+      MatillionRealmConName:
+        default: Username
+      MatillionRealmConPass:
+        default: Connection Password
+      MatillionRealmConURL:
+        default: URL
+      MatillionRealmMETLAPIRole:
+        default: API Role
+      MatillionRealmMETLAdminRole:
+        default: Admin Role
+      MatillionRealmMETLRole:
+        default: Login Role
+      MatillionRealmRoleBase:
+        default: Role Base
+      MatillionRealmRoleName:
+        default: Role Name
+      MatillionRealmRoleSearch:
+        default: Role Search
+      MatillionRealmUserBase:
+        default: User Base
+      MatillionRealmUserSearch:
+        default: User Search
+      MatillionRealmUserSubtree:
+        default: User Subtree
+      TagEnvironment:
+        default: Environment
+      QSS3BucketName:
+        default: Quick Start S3 bucket name
+      QSS3KeyPrefix:
+        default: Quick Start S3 key prefix
+
+Parameters:
+    
+  AcceptedEULA: 
+    AllowedValues: 
+      - "Yes"
+      - "No"
+    Default: "No"
+    Description: >- 
+        PLEASE READ THE MATILLION ETL FOR REDSHIFT EULA (https://redshift-support.matillion.com/s/article/2845300) CAREFULLY BEFORE USING THE SOFTWARE. 
+        The Matillion stack can be created only if you have already accepted the EULA. To accept the EULA, see https://aws.amazon.com/marketplace/pp/B010ED5YF8.     
+    Type: String
+
+  VPCID:
+    Description: "Enter existing VPC-ID. This must be the VPC containing the subnet(s)."
+    Type: AWS::EC2::VPC::Id
+    
+  PrivateSubnet1:
+    Description: "An existing Private subnet to launch secondary resources, e.g. Postgres database."
+    Type: AWS::EC2::Subnet::Id
+    
+  PrivateSubnet2:
+    Description: "An existing Private subnet to launch secondary resources, e.g. Postgres database."
+    Type: AWS::EC2::Subnet::Id
+    
+  PublicSubnet1:
+    Description: "An existing Public subnet to launch the Matillion ec2 instance(s) into."
+    Type: AWS::EC2::Subnet::Id
+    
+  PublicSubnet2:
+    Description: "An existing Public subnet to launch the Matillion ec2 instance(s) into."
+    Type: AWS::EC2::Subnet::Id
+    
+  RemoteAccessCIDR:
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+    Description: Inbound IPv4 CIDR Range for Application Load Balancer.
+    Type: String
+    
+  MatillionEC2InstanceType:
+    AllowedValues:
+    - m5.large
+    - m5.xlarge
+    - m3.medium
+    - t2.medium
+    - t3.medium
+    - m3.large
+    - m4.large
+    - m5.large
+    - r3.large
+    - r4.large
+    - m3.xlarge
+    - m4.xlarge
+    - m5.xlarge
+    - r3.xlarge
+    - r4.xlarge
+    - t3.xlarge
+    - x1e.xlarge
+    - m5.2xlarge
+    - r3.2xlarge
+    Default: m4.large
+    Description: The Amazon EC2 instance type for the Matillion instance. A larger instance type enables greater workload concurrency. For more information, see https://www.matillion.com/pricing/etl-for-redshift/.
+    Type: String
+    
+  KeyPairName:
+    Description: The selected key pair will be added to the set of keys authorized for this instance
+    Type: AWS::EC2::KeyPair::KeyName
+    
+  LBDnsName:
+    Default: matillion
+    Description: 'Load Balancer DNS Name Prefix, Example: [matillion]-1731869672.eu-west-1.elb.amazonaws.com'
+    Type: String 
+     
+  PGInstanceClass:
+    AllowedValues:
+      - db.r5.large
+      - db.r5.xlarge
+      - db.r5.2xlarge
+      - db.r5.4xlarge
+      - db.r5.12xlarge
+      - db.r5.24xlarge
+      - db.r4.large
+      - db.r4.xlarge
+      - db.r4.2xlarge
+      - db.r4.4xlarge
+      - db.r4.8xlarge
+      - db.r4.16xlarge
+    Default: db.r5.large
+    Description: 'The Aurora/PostgreSQL database instance class.'
+    Type: String
+    
+  PGDBName:
+    AllowedPattern: "([a-z]|[0-9])+"
+    Default: matillion
+    Description: 'The Aurora/PostgreSQL database name for Matillion repository'
+    Type: String
+    
+  PGDBPort:
+    Default: 8201
+    Description: 'The port number on which the Aurora/PostgreSQL database accepts incoming connections.'
+    MaxValue: 65535
+    MinValue: 1150
+    Type: Number
+    
+  PGMasterUsername:
+    AllowedPattern: "^[a-zA-Z]{1}[a-z0-9]*"
+    Default: matillion
+    Description: >-
+        The user name that is associated with the master user account for the Aurora DB that is being created.
+    Type: String
+    
+  PGMasterUserPassword:
+    AllowedPattern: '(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*'
+    Description: "The Aurora/PostgreSQL master user password. Min 8 chars, must include 1 uppercase, 1 lowercase, 1 number, 1 (non / @ \" ') symbol"
+    NoEcho: true
+    Type: String
+      
+  NotificationList:
+    Type: String
+    Default: 'db-ops@domain.com'
+    Description: 'The email notification that is used to configure an SNS topic for sending an Amazon CloudWatch alarm and Amazon RDS event notifications.'
+    AllowedPattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
+    ConstraintDescription: Provide a valid email address.  
+    
+  MatillionRealmConName:
+    Description: 'The connection user name (e.g., administrator@INTERNAL.DOMAIN.COM).'
+    Type: String
+    
+  MatillionRealmConPass:
+    Description: "The password for the connection user name used for the initial bind."
+    NoEcho: true
+    Type: String
+    
+  MatillionRealmConURL:
+    Description: 'The URL to your directory server, Example: ldap://10.10.10.254:389'
+    Type: String
+    
+  MatillionRealmMETLAPIRole:
+    Description: "The name of an existing group in the directory server whose users will be allowed to administer Matillion. Role names are case-sensitive."
+    Type: String
+    
+  MatillionRealmMETLAdminRole:
+    Description: "The name of an existing group in the directory server whose users will be allowed to administer Matillion. Role names are case-sensitive."
+    Type: String
+    
+  MatillionRealmMETLRole:
+    Description: "The name of an existing group in the directory server whose users will be allowed to log in. Role names are case-sensitive."
+    Type: String
+    
+  MatillionRealmRoleBase:
+    Description: 'The subtree below which groups are stored in the directory tree (e.g., cn=Groups,dc=INTERNAL,dc=domain,dc=com).'
+    Type: String
+    
+  MatillionRealmRoleName:
+    Description: 'The LDAP attribute used to identify a group or role (e.g., cn).'
+    Type: String
+    
+  MatillionRealmRoleSearch:
+    Description: 'The LDAP attribute to use to identify groups or roles (e.g., member={0}).'
+    Type: String
+    
+  MatillionRealmUserBase:
+    Description: 'The subtree below which users are stored in the directory tree (e.g., cn=Users,dc=INTERNAL,dc=domain,dc=com).'
+    Type: String
+    
+  MatillionRealmUserSearch:
+    Description: 'The LDAP attribute to use for identifying users (e.g., sAMAccountName={0}).'
+    Type: String
+    
+  MatillionRealmUserSubtree:
+    AllowedValues:
+    - 'true'
+    - 'false'
+    Default: 'false'
+    Description: "Sets the scope of the search. Select true if you wish to search the entire subtree, rooted at the 'User Base' entry. Selecting false (default) requests a lone top-level search."
+    Type: String
+    
+  TagEnvironment:
+    Type: String
+    AllowedValues:
+      - dev
+      - test
+      - pre-prod
+      - prod
+      - none
+    Description: 'Designates the environment stage of the associated AWS resource.'
+    Default: 'dev'
+    
+  QSS3BucketName:
+    AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
+    ConstraintDescription: "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Default: 'aws-quickstart'
+    Description: "The S3 bucket name for the Quick Start assets. The Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Type: String
+    
+  QSS3KeyPrefix:
+    AllowedPattern: "^[0-9a-zA-Z-/]*$"
+    ConstraintDescription: "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Default: 'quickstart-matillion-etl/'
+    Description: "The S3 key prefix for the Quick Start assets. The Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Type: String
+
+Conditions:
+  IsGovCloud:
+    Fn::Equals:
+    - Ref: AWS::Region
+    - us-gov-west-1
+    
+Mappings:
+  RegionMap:
+    ap-northeast-1:
+      AMI: ami-0417324631060315c
+    ap-northeast-2:
+      AMI: ami-095457b40dfba1246
+    ap-south-1:
+      AMI: ami-0085ef1bb023d93d5
+    ap-southeast-1:
+      AMI: ami-0764f5731c0bf0fc1
+    ap-southeast-2:
+      AMI: ami-04ae5286260fa019b
+    ca-central-1:
+      AMI: ami-04a0243b56424c433
+    eu-central-1:
+      AMI: ami-0fe5b16e0c36af807
+    eu-west-1:
+      AMI: ami-07270cb27dafcd9b8
+    eu-west-2:
+      AMI: ami-0de9d2f8e3fd1d91d
+    eu-west-3:
+      AMI: ami-0635d4fbaf12fd39b
+    us-gov-west-1:
+      AMI: ami-3bbaf25a
+    sa-east-1:
+      AMI: ami-0e9f062d7600dfdb5
+    us-east-1:
+      AMI: ami-02d690b657fa3cc06
+    us-east-2:
+      AMI: ami-0fca2403098b186fa
+    us-west-1:
+      AMI: ami-09bcaec6d0fecbd60
+    us-west-2:
+      AMI: ami-08b4d9c6bcd5c3bf1
+
+Resources:
+
+  GenerateIdStack:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: !Sub 
+        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-amazon-redshift/templates/generateid.template.yaml
+        - QSS3Region: !If [IsGovCloud , s3-us-gov-west-1 , s3]
+    
+  AuroraStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub 
+        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/aurora_postgres.template.yaml
+        - QSS3Region: !If [IsGovCloud , s3-us-gov-west-1 , s3]
+      Parameters:
+        Subnet1ID: !Ref PrivateSubnet1
+        Subnet2ID: !Ref PrivateSubnet2
+        VPCID: !Ref VPCID
+        DBName: !Ref PGDBName
+        DBAutoMinorVersionUpgrade: 'true'
+        DBAllocatedStorageEncrypted: 'true'
+        DBBackupRetentionPeriod: '35'
+        DBEngineVersion: '9.6.12'
+        DBInstanceClass: !Ref PGInstanceClass
+        DBMasterUsername: !Ref PGMasterUsername
+        DBMasterUserPassword: !Ref PGMasterUserPassword
+        DBPort: !Ref PGDBPort
+        DBMultiAZ: 'true'
+        CustomDBSecurityGroup: ''
+        EnableEventSubscription: 'true'
+        DBAccessCIDR: '0.0.0.0/0'
+        NotificationList: !Ref NotificationList
+        EnvironmentStage: !Ref TagEnvironment
+        
+  CDCRoleForDMS:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join [ "-", [ "MTLN-CDCForDMS", !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - dms.amazonaws.com
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:ListBucket
+            Effect: Allow
+            Resource: "*"
+            Sid: CDCPermissionsForDMS
+        PolicyName: !Join [ "-", [ "MTLN-CDCPermissions", !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
+    
+  CDCRoleForLambda:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Join [ "-", [ "MTLN-CDCForLambda", !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:ListBucket
+            - sqs:GetQueueUrl
+            - sqs:SendMessage
+            Effect: Allow
+            Resource: "*"
+            Sid: CDCPermissionsForLambda
+        PolicyName: !Join [ "-", [ "MTLN-LambdaPermissions", !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
+    
+    
+  MatillionEc2Instance1:
+    DependsOn: AuroraStack
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          commands:
+            setup:
+              command: "/sbin/service tomcat8 stop && rm -r /var/log/tomcat8/catalina.out
+                && /usr/share/emerald/WEB-INF/classes/scripts/matillion_ensure.sh
+                && /sbin/service tomcat8 start"
+          files:
+            "/etc/awslogs/awscli.conf":
+              content:
+                Fn::Join:
+                - ''
+                - - "[plugins]\ncwlogs = cwlogs\n[default]\nregion = "
+                  - Ref: AWS::Region
+              group: root
+              mode: '000644'
+              owner: root
+            "/etc/awslogs/awslogs.conf":
+              content: |
+                [general]
+                state_file = /var/lib/awslogs/agent-state
+                [/var/log/tomcat8/catalina.out]
+                datetime_format = %d-%b-%Y %H:%M:%S.%f
+                file = /var/log/tomcat8/catalina.out
+                buffer_duration = 5000
+                log_stream_name = {instance_id}
+                initial_position = start_of_file
+                log_group_name = Matillion-ETL
+              group: root
+              mode: '000644'
+              owner: root
+            "/etc/sysconfig/tomcat8":
+              content:
+                Fn::Join:
+                - ''
+                - - "export MTLN_PERSISTENCE_STORE_NAME=postgres \n"
+                  - export MTLN_PERSISTENCE_USERNAME_POSTGRES=
+                  - Ref: PGMasterUsername
+                  - "\n"
+                  - export MTLN_PERSISTENCE_PASSWORD_POSTGRES={enc:base64}
+                  - Fn::Base64:
+                      Ref: PGMasterUserPassword
+                  - "\n"
+                  - export MTLN_PERSISTENCE_URL_POSTGRES=
+                  - Fn::Join:
+                    - ''
+                    - - jdbc:postgresql://
+                      - Fn::GetAtt:
+                        - AuroraStack
+                        - Outputs.RDSEndPointAddress
+                      - ":"
+                      - Fn::GetAtt:
+                        - AuroraStack
+                        - Outputs.RDSEndPointPort
+                      - "/"
+                      - Ref: PGDBName
+              group: root
+              mode: '000644'
+              owner: root
+    Properties:
+      IamInstanceProfile:
+        Ref: MatillionEC2InstanceProfile
+      ImageId:
+        Fn::FindInMap:
+        - RegionMap
+        - Ref: AWS::Region
+        - AMI
+      InstanceType:
+        Ref: MatillionEC2InstanceType
+      KeyName:
+        Ref: KeyPairName
+      SecurityGroupIds:
+      - Ref: MatillionEC2SecurityGroup
+      SubnetId:
+        Ref: PublicSubnet1
+      Tags:
+      - Key: Name
+        Value: Matillion-ETL
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - "#!/bin/bash -xe \n"
+            - "yum install -y awslogs xmlstarlet \n"
+            - "chkconfig awslogs on \n"
+            - "yum update -y aws-cfn-bootstrap \n"
+            - "/opt/aws/bin/cfn-init -v "
+            - " --stack "
+            - Ref: AWS::StackName
+            - " --resource "
+            - MatillionEc2Instance1
+            - " --region "
+            - Ref: AWS::Region
+            - "\n"
+            - "/opt/aws/bin/cfn-signal -e  $? "
+            - " --stack "
+            - Ref: AWS::StackName
+            - " --resource "
+            - MatillionEc2Instance1
+            - " --region "
+            - Ref: AWS::Region
+            - "\n"
+            - "service awslogs start \n"
+            - 'xmlstarlet ed --inplace -d "/Server/Service/Engine/Realm" '
+            - '-s ''/Server/Service/Engine'' -t elem -n Realm -v "" '
+            - "-i '/Server/Service/Engine/Realm' -t attr -n className -v org.apache.catalina.realm.JNDIRealm "
+            - '-i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n connectionName -v '
+            - Ref: MatillionRealmConName
+            - ' -i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n connectionPassword -v '
+            - Ref: MatillionRealmConPass
+            - ' -i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n connectionURL -v '
+            - Ref: MatillionRealmConURL
+            - ' -i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n roleBase -v '
+            - Ref: MatillionRealmRoleBase
+            - ' -i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n roleName -v '
+            - Ref: MatillionRealmRoleName
+            - ' -i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n roleSearch -v '
+            - Ref: MatillionRealmRoleSearch
+            - ' -i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n userBase -v '
+            - Ref: MatillionRealmUserBase
+            - ' -i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n userSearch -v '
+            - Ref: MatillionRealmUserSearch
+            - ' -i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n userSubtree -v '
+            - Ref: MatillionRealmUserSubtree
+            - " /etc/tomcat8/server.xml \n"
+            - "cp /usr/share/emerald/WEB-INF/security.fragment.enabled /usr/share/emerald/WEB-INF/security.fragment
+              \n"
+            - sed -i -e "s/\(<role-name>\)\([[:alnum:]]\+\?\)\(<\/role-name>\)/\1
+            - Ref: MatillionRealmMETLRole
+            - "\\3/g\" /usr/share/emerald/WEB-INF/security.fragment  \n"
+            - sed -i '/^ADMIN_ROLE_NAME=/{h;s/=.*/=
+            - Ref: MatillionRealmMETLAdminRole
+            - "/};${x;/^$/{s//ADMIN_ROLE_NAME="
+            - Ref: MatillionRealmMETLAdminRole
+            - "/;H};x}' /usr/share/emerald/WEB-INF/classes/Emerald.properties \n"
+            - sed -i '/^API_SECURITY_GROUP=/{h;s/=.*/=
+            - Ref: MatillionRealmMETLAPIRole
+            - "/};${x;/^$/{s//API_SECURITY_GROUP="
+            - Ref: MatillionRealmMETLAPIRole
+            - "/;H};x}' /usr/share/emerald/WEB-INF/classes/Emerald.properties \n"
+    Type: AWS::EC2::Instance
+    
+  MatillionEc2Instance2:
+    DependsOn: AuroraStack
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          commands:
+            setup:
+              command: "/sbin/service tomcat8 stop && rm -r /var/log/tomcat8/catalina.out
+                && /usr/share/emerald/WEB-INF/classes/scripts/matillion_ensure.sh
+                && /sbin/service tomcat8 start"
+          files:
+            "/etc/awslogs/awscli.conf":
+              content:
+                Fn::Join:
+                - ''
+                - - "[plugins]\ncwlogs = cwlogs\n[default]\nregion = "
+                  - Ref: AWS::Region
+              group: root
+              mode: '000644'
+              owner: root
+            "/etc/awslogs/awslogs.conf":
+              content: |
+                [general]
+                state_file = /var/lib/awslogs/agent-state
+                [/var/log/tomcat8/catalina.out]
+                datetime_format = %d-%b-%Y %H:%M:%S.%f
+                file = /var/log/tomcat8/catalina.out
+                buffer_duration = 5000
+                log_stream_name = {instance_id}
+                initial_position = start_of_file
+                log_group_name = Matillion-ETL
+              group: root
+              mode: '000644'
+              owner: root
+            "/etc/sysconfig/tomcat8":
+              content:
+                Fn::Join:
+                - ''
+                - - "export MTLN_PERSISTENCE_STORE_NAME=postgres \n"
+                  - export MTLN_PERSISTENCE_USERNAME_POSTGRES=
+                  - Ref: PGMasterUsername
+                  - "\n"
+                  - export MTLN_PERSISTENCE_PASSWORD_POSTGRES={enc:base64}
+                  - Fn::Base64:
+                      Ref: PGMasterUserPassword
+                  - "\n"
+                  - export MTLN_PERSISTENCE_URL_POSTGRES=
+                  - Fn::Join:
+                    - ''
+                    - - jdbc:postgresql://
+                      - Fn::GetAtt:
+                        - AuroraStack
+                        - Outputs.RDSEndPointAddress
+                      - ":"
+                      - Fn::GetAtt:
+                        - AuroraStack
+                        - Outputs.RDSEndPointPort
+                      - "/"
+                      - Ref: PGDBName
+              group: root
+              mode: '000644'
+              owner: root
+    Properties:
+      IamInstanceProfile:
+        Ref: MatillionEC2InstanceProfile
+      ImageId:
+        Fn::FindInMap:
+        - RegionMap
+        - Ref: AWS::Region
+        - AMI
+      InstanceType:
+        Ref: MatillionEC2InstanceType
+      KeyName:
+        Ref: KeyPairName
+      SecurityGroupIds:
+      - Ref: MatillionEC2SecurityGroup
+      SubnetId:
+        Ref: PublicSubnet2
+      Tags:
+      - Key: Name
+        Value: Matillion-ETL
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - "#!/bin/bash -xe \n"
+            - "yum install -y awslogs xmlstarlet \n"
+            - "chkconfig awslogs on \n"
+            - "yum update -y aws-cfn-bootstrap \n"
+            - "/opt/aws/bin/cfn-init -v "
+            - " --stack "
+            - Ref: AWS::StackName
+            - " --resource "
+            - MatillionEc2Instance2
+            - " --region "
+            - Ref: AWS::Region
+            - "\n"
+            - "/opt/aws/bin/cfn-signal -e  $? "
+            - " --stack "
+            - Ref: AWS::StackName
+            - " --resource "
+            - MatillionEc2Instance2
+            - " --region "
+            - Ref: AWS::Region
+            - "\n"
+            - "service awslogs start \n"
+            - 'xmlstarlet ed --inplace -d "/Server/Service/Engine/Realm" '
+            - '-s ''/Server/Service/Engine'' -t elem -n Realm -v "" '
+            - "-i '/Server/Service/Engine/Realm' -t attr -n className -v org.apache.catalina.realm.JNDIRealm "
+            - '-i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n connectionName -v '
+            - Ref: MatillionRealmConName
+            - ' -i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n connectionPassword -v '
+            - Ref: MatillionRealmConPass
+            - ' -i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n connectionURL -v '
+            - Ref: MatillionRealmConURL
+            - ' -i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n roleBase -v '
+            - Ref: MatillionRealmRoleBase
+            - ' -i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n roleName -v '
+            - Ref: MatillionRealmRoleName
+            - ' -i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n roleSearch -v '
+            - Ref: MatillionRealmRoleSearch
+            - ' -i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n userBase -v '
+            - Ref: MatillionRealmUserBase
+            - ' -i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n userSearch -v '
+            - Ref: MatillionRealmUserSearch
+            - ' -i ''/Server/Service/Engine/Realm[@className="org.apache.catalina.realm.JNDIRealm"]''
+              -t attr -n userSubtree -v '
+            - Ref: MatillionRealmUserSubtree
+            - " /etc/tomcat8/server.xml \n"
+            - "cp /usr/share/emerald/WEB-INF/security.fragment.enabled /usr/share/emerald/WEB-INF/security.fragment
+              \n"
+            - sed -i -e "s/\(<role-name>\)\([[:alnum:]]\+\?\)\(<\/role-name>\)/\1
+            - Ref: MatillionRealmMETLRole
+            - "\\3/g\" /usr/share/emerald/WEB-INF/security.fragment  \n"
+            - sed -i '/^ADMIN_ROLE_NAME=/{h;s/=.*/=
+            - Ref: MatillionRealmMETLAdminRole
+            - "/};${x;/^$/{s//ADMIN_ROLE_NAME="
+            - Ref: MatillionRealmMETLAdminRole
+            - "/;H};x}' /usr/share/emerald/WEB-INF/classes/Emerald.properties \n"
+            - sed -i '/^API_SECURITY_GROUP=/{h;s/=.*/=
+            - Ref: MatillionRealmMETLAPIRole
+            - "/};${x;/^$/{s//API_SECURITY_GROUP="
+            - Ref: MatillionRealmMETLAPIRole
+            - "/;H};x}' /usr/share/emerald/WEB-INF/classes/Emerald.properties \n"
+    Type: AWS::EC2::Instance
+    
+  MatillionALBSecurityGroup:
+    Properties:
+      GroupDescription: Matillion-ALB-SecurityGroup
+      SecurityGroupIngress:
+      - CidrIp:
+          Ref: RemoteAccessCIDR
+        FromPort: '80'
+        IpProtocol: tcp
+        ToPort: '80'
+      - CidrIp:
+          Ref: RemoteAccessCIDR
+        FromPort: '443'
+        IpProtocol: tcp
+        ToPort: '443'
+      VpcId:
+        Ref: VPCID
+    Type: AWS::EC2::SecurityGroup
+    
+  MatillionEC2SecurityGroup:
+    Properties:
+      GroupDescription: Matillion-EC2-SecurityGroup
+      SecurityGroupIngress:
+      - 
+          CidrIp: !Ref RemoteAccessCIDR 
+          FromPort: 80
+          ToPort: 80
+          IpProtocol: tcp
+      - 
+          CidrIp: !Ref RemoteAccessCIDR 
+          FromPort: 443
+          ToPort: 443
+          IpProtocol: tcp
+      - 
+          CidrIp: !Ref RemoteAccessCIDR 
+          FromPort: 22
+          ToPort: 22
+          IpProtocol: tcp     
+      VpcId:
+        Ref: VPCID
+    Type: AWS::EC2::SecurityGroup
+    
+  MatillionALB:
+    Properties:
+      Name: !Join [ "-", [ !Ref LBDnsName, !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
+      Scheme: internet-facing
+      SecurityGroups:
+      - Ref: MatillionALBSecurityGroup
+      Subnets:
+      - Ref: PublicSubnet1
+      - Ref: PublicSubnet2
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    
+  MatillionALBListener:
+    Properties:
+      DefaultActions:
+      - TargetGroupArn:
+          Ref: MatillionTargetGroup
+        Type: forward
+      LoadBalancerArn:
+        Ref: MatillionALB
+      Port: '80'
+      Protocol: HTTP
+    Type: AWS::ElasticLoadBalancingV2::Listener
+
+#Not sure why we need MatillionClusterRule - mostly needs to be removed.
+    
+  MatillionClusterRule:
+    Properties:
+      FromPort: 5701
+      GroupId:
+        Ref: MatillionEC2SecurityGroup
+      IpProtocol: tcp
+      SourceSecurityGroupId:
+        Ref: MatillionEC2SecurityGroup
+      ToPort: 5701
+    Type: AWS::EC2::SecurityGroupIngress
+    
+  MatillionEc2ALBRule:
+    Properties:
+      FromPort: 80
+      ToPort: 80
+      IpProtocol: tcp
+      GroupId:
+        Ref: MatillionEC2SecurityGroup
+      SourceSecurityGroupId:
+        Ref: MatillionALBSecurityGroup
+    Type: AWS::EC2::SecurityGroupIngress
+    
+  MatillionEC2InstanceProfile:
+    Properties:
+      Roles:
+      - Ref: MatillionRole
+    Type: AWS::IAM::InstanceProfile
+    
+  MatillionRole:
+    Properties:
+      RoleName: !Join [ "-", [ "MatillionRole", !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action:
+          - sts:AssumeRole
+          Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+      Policies:
+      - PolicyDocument:
+          Statement:
+          - Action:
+            - redshift:DescribeClusters
+            Effect: Allow
+            Resource:
+            - "*"
+            Sid: StmtMinRedshift
+          - Action:
+            - s3:ListAllMyBuckets
+            - s3:ListBucket
+            - s3:GetObject
+            - s3:PutObject
+            - s3:DeleteObject
+            - s3:GetBucketLocation
+            Effect: Allow
+            Resource:
+            - "*"
+            Sid: StmtMinS3
+          - Action:
+            - sqs:DeleteMessage
+            - sqs:ListQueues
+            - sqs:ReceiveMessage
+            - sqs:SendMessage
+            - sqs:GetQueueUrl
+            Effect: Allow
+            Resource:
+            - "*"
+            Sid: StmtMinSQS
+          - Action:
+            - rds:DescribeDBInstances
+            Effect: Allow
+            Resource:
+            - "*"
+            Sid: StmtMinRDS
+          - Action:
+            - ec2:CreateSnapshot
+            - ec2:CreateTags
+            - ec2:DescribeInstances
+            - ec2:DescribeVolumes
+            Effect: Allow
+            Resource:
+            - "*"
+            Sid: StmtMinEC2
+          - Action:
+            - sns:ListTopics
+            - sns:CreateTopic
+            - sns:Publish
+            Effect: Allow
+            Resource:
+            - "*"
+            Sid: StmtMinSNS
+          - Action:
+            - cloudwatch:PutMetricData
+            - cloudwatch:ListMetrics
+            Effect: Allow
+            Resource:
+            - "*"
+            Sid: StmtMinCloudwatch
+          - Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogStreams
+            Effect: Allow
+            Resource:
+            - Fn::If:
+              - IsGovCloud
+              - arn:aws-us-gov:logs:*:*:*
+              - arn:aws:logs:*:*:*
+            Sid: StmtMinCloudwatchLogs
+          - Action:
+            - kms:ListAliases
+            - kms:Encrypt
+            - kms:Decrypt
+            Effect: Allow
+            Resource:
+            - "*"
+            Sid: StmtMinKMS
+          - Action:
+            - dynamodb:ListTables
+            - dynamodb:DescribeTable
+            - dynamodb:Scan
+            Effect: Allow
+            Resource: "*"
+            Sid: StmtMinDynamoDB
+          - Action:
+            - dms:CreateEndpoint
+            - dms:CreateReplicationTask
+            - dms:DeleteEndpoint
+            - dms:DeleteReplicationTask
+            - dms:DescribeConnections
+            - dms:DescribeEndpoints
+            - dms:DescribeReplicationInstances
+            - dms:DescribeReplicationTasks
+            - dms:ModifyEndpoint
+            - dms:StartReplicationTask
+            - dms:StopReplicationTask
+            - dms:TestConnection
+            - ec2:DescribeRegions
+            - iam:ListRoles
+            - iam:PassRole
+            - lambda:AddPermission
+            - lambda:CreateFunction
+            - lambda:DeleteFunction
+            - lambda:GetFunction
+            - lambda:GetPolicy
+            - lambda:RemovePermission
+            - lambda:UpdateFunctionCode
+            - lambda:UpdateFunctionConfiguration
+            - s3:GetBucketNotification
+            - s3:ListAllMyBuckets
+            - s3:PutBucketNotification
+            - sqs:ChangeMessageVisibility
+            - sqs:DeleteMessage
+            - sqs:ListQueues
+            - sqs:ReceiveMessage
+            Effect: Allow
+            Resource: "*"
+            Sid: CDCPermissions
+        PolicyName: !Join [ "-", [ "MatillionRolePermissions", !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
+    Type: AWS::IAM::Role
+    
+  MatillionTargetGroup:
+    Properties:
+      HealthCheckIntervalSeconds: '10'
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: '5'
+      HealthyThresholdCount: '2'
+      Matcher:
+        HttpCode: '200'
+      Name: !Join [ "-", [ "MTLNTG", !GetAtt GenerateIdStack.Outputs.UniqueID ] ]
+      Port: '80'
+      Protocol: HTTP
+      TargetGroupAttributes:
+      - Key: stickiness.enabled
+        Value: 'true'
+      Targets:
+      - Id:
+          Ref: MatillionEc2Instance1
+        Port: '80'
+      - Id:
+          Ref: MatillionEc2Instance2
+        Port: '80'
+      VpcId:
+        Ref: VPCID
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    
+Outputs:
+  ALBURL:
+    Description: Matillion Cluster URL
+    Value:
+      Fn::Join:
+      - ''
+      - - http://
+        - Fn::GetAtt:
+          - MatillionALB
+          - DNSName
+  RDSJDBCConnectionString:
+    Description: JDBC connection string for Matillion Aurora/Postgres DB
+    Value:
+      Fn::Join:
+      - ''
+      - - jdbc:postgresql://
+        - Fn::GetAtt:
+          - AuroraStack
+          - Outputs.RDSEndPointAddress
+        - ":"
+        - Fn::GetAtt:
+          - AuroraStack
+          - Outputs.RDSEndPointPort
+        - "/"
+        - Ref: PGDBName
