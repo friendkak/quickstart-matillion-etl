@@ -1,4 +1,4 @@
-Description: "This cloudformation template creates AWS VPC, Bastion host, Amazon Redshift and Clustered Enterprise version of Matillion software."
+Description: "This cloudformation template creates AWS VPC, Bastion host, Amazon Redshift and Matillion software."
 Metadata:
   LICENSE: EULA - Matillion ETL for Redshift
   AWS::CloudFormation::Interface:
@@ -18,30 +18,29 @@ Metadata:
       - PublicSubnet2CIDR
       - RemoteAccessCIDR
     - Label:
-        default: Matillion EC2 Instance and Application Load Balancer configuration 
+        default: Matillion EC2 instance configuration 
       Parameters:
       - MatillionEC2InstanceType
       - KeyPairName
-      - LBDnsName
     - Label:
         default: Matillion Aurora/PostgreSQL repository configuration 
       Parameters:
       - PGInstanceClass
       - PGDBName
-      - PGDBPort
       - PGMasterUsername
       - PGMasterUserPassword
+      - PGDBPort
       - NotificationList
     - Label:
         default: Linux bastion configuration
       Parameters:
-       - EnableBastion
-       - BastionInstanceType
-       - EnableTCPForwarding
-       - EnableX11Forwarding
-       - AlternativeInitializationScript
+      - EnableBastion
+      - BastionInstanceType
+      - EnableTCPForwarding
+      - EnableX11Forwarding
+      - AlternativeInitializationScript
     - Label:
-        default: Amazon Redshift configuration
+        default: Amazon Redshift configuration 
       Parameters:
       - EnableRedshiftStack
       - RedshiftDBName
@@ -59,27 +58,12 @@ Metadata:
       - RedshiftSnapshotIdentifier
       - RedshiftSnapshotAccountNumber
     - Label:
-        default: Matillion-ETL realm configuration
-      Parameters:
-      - MatillionRealmConName
-      - MatillionRealmConPass
-      - MatillionRealmConURL
-      - MatillionRealmUserBase
-      - MatillionRealmUserSearch
-      - MatillionRealmRoleBase
-      - MatillionRealmRoleName
-      - MatillionRealmRoleSearch
-      - MatillionRealmUserSubtree
-      - MatillionRealmMETLRole
-      - MatillionRealmMETLAdminRole
-      - MatillionRealmMETLAPIRole
-    - Label:
         default: Tag identifiers
       Parameters:
       - TagEnvironment
       - TagName
     - Label:
-        default: Quick Start configuration
+        default: AWS Quick Start configuration 
       Parameters:
       - QSS3BucketName
       - QSS3KeyPrefix
@@ -103,11 +87,9 @@ Metadata:
       MatillionEC2InstanceType:
         default: Matillion EC2 instance type
       KeyPairName:
-        default: Key pair Name
-      LBDnsName:
-        default: Matillion ALB DNS prefix
+        default: Key pair name
       PGInstanceClass:
-        default: Aurora/PostgreSQL instance class
+        default: Aurora/PostgreSQL instance class 
       PGDBName:
         default: Aurora/PostgreSQL database name
       PGDBPort:
@@ -151,37 +133,13 @@ Metadata:
       Redshiftkmskey:
         default: KMS key ID
       RedshiftS3BucketForIAMRole:
-        default: Amazon S3 bucket for Redshift IAM role 
+        default: Amazon S3 bucket for Redshift IAM role
       RedshiftMaintenancewindow:
         default: Maintenance window
       RedshiftSnapshotIdentifier:
         default: Redshift snapshot identifier
       RedshiftSnapshotAccountNumber:
         default: AWS account-ID of the Redshift Snapshot
-      MatillionRealmConName:
-        default: Username
-      MatillionRealmConPass:
-        default: Connection Password
-      MatillionRealmConURL:
-        default: URL
-      MatillionRealmMETLAPIRole:
-        default: API Role
-      MatillionRealmMETLAdminRole:
-        default: Admin Role
-      MatillionRealmMETLRole:
-        default: Login Role
-      MatillionRealmRoleBase:
-        default: Role Base
-      MatillionRealmRoleName:
-        default: Role Name
-      MatillionRealmRoleSearch:
-        default: Role Search
-      MatillionRealmUserBase:
-        default: User Base
-      MatillionRealmUserSearch:
-        default: User Search
-      MatillionRealmUserSubtree:
-        default: User Subtree
       TagEnvironment:
         default: Environment
       TagName:
@@ -190,7 +148,6 @@ Metadata:
         default: Quick Start S3 bucket name
       QSS3KeyPrefix:
         default: Quick Start S3 key prefix
-        
 Parameters:
     
   AcceptedEULA: 
@@ -200,7 +157,7 @@ Parameters:
     Default: "No"
     Description: >- 
         PLEASE READ THE MATILLION ETL FOR REDSHIFT EULA (https://redshift-support.matillion.com/s/article/2845300) CAREFULLY BEFORE USING THE SOFTWARE. 
-        The Matillion stack can be created only if you have already accepted the EULA. To accept the EULA, see https://aws.amazon.com/marketplace/pp/B010ED5YF8.    
+        The Matillion stack can be created only if you have already accepted the EULA. To accept the EULA, see https://aws.amazon.com/marketplace/pp/B010ED5YF8.     
     Type: String
     
   AvailabilityZones:
@@ -246,9 +203,9 @@ Parameters:
     Type: String
     
   RemoteAccessCIDR:
-    AllowedPattern: "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/([0-9]|[1-2][0-9]|3[0-2]))$"
-    ConstraintDescription: "CIDR block parameter must be in the form x.x.x.x/x"
-    Description: "Allowed CIDR block for external access to ALB and SSH access to bastion host."
+    AllowedPattern: ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$
+    ConstraintDescription: CIDR block parameter must be in the form x.x.x.x/x
+    Description: Allowed CIDR block in the format x.x.x.x/x for external SSH access to the bastion host.
     Type: String
     
   MatillionEC2InstanceType:
@@ -273,22 +230,12 @@ Parameters:
     - m5.2xlarge
     - r3.2xlarge
     Default: m4.large
-    Description: >- 
-        The Amazon EC2 instance type for the Matillion instance. A larger instance type enables greater workload concurrency. 
-        For more information, see https://www.matillion.com/pricing/etl-for-redshift/.
+    Description: "The Amazon EC2 instance type for the Matillion instance. A larger instance type enables greater workload concurrency. For more information, see https://www.matillion.com/pricing/etl-for-redshift/."
     Type: String
       
   KeyPairName:
-    Description: >- 
-        A public/private key pair, which allows you to connect securely to your instance after it launches. 
-        This is the key pair you created in your preferred AWS Region; see the Technical requirements section. 
-        If you do not have one in this AWS Region, create it before continuing.
+    Description: A public/private key pair, which allows you to connect securely to your instance after it launches. This is the key pair you created in your preferred AWS Region; see the Technical requirements section. If you do not have one in this AWS Region, create it before continuing.
     Type: 'AWS::EC2::KeyPair::KeyName'
-    
-  LBDnsName:
-    Default: matillion
-    Description: 'The prefix for the Load Balancer DNS name. Example: [matillion]-1731869672.eu-west-1.elb.amazonaws.com'
-    Type: String
     
   PGInstanceClass:
     AllowedValues:
@@ -305,42 +252,40 @@ Parameters:
       - db.r4.8xlarge
       - db.r4.16xlarge
     Default: db.r5.large
-    Description: 'The Aurora/PostgreSQL database instance class.'
+    Description: The Aurora/PostgreSQL database instance class.
     Type: String
-    
-  PGDBPort:
-    Default: 8201
-    Description: 'The port number on which the Aurora database accepts incoming connections.'
-    MaxValue: 65535
-    MinValue: 1150
-    Type: Number
     
   PGDBName:
     AllowedPattern: "([a-z]|[0-9])+"
     Default: matillion
-    Description: 'The Aurora/PostgreSQL database name for the Matillion repository.'
+    Description: The Aurora/PostgreSQLs database name for the Matillion repository.
     Type: String
     
-  PGMasterUserPassword:
-    AllowedPattern: '(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*'
-    Description: >- 
-        The Aurora/PostgreSQL master user password. Min 8 chars, must include 1 uppercase, 1 lowercase, 1 number, 1 (non / @ " ') symbol.
-    NoEcho: true
-    Type: String
+  PGDBPort:
+    Default: 8201
+    Description: The port number on which the Aurora/PostgreSQL database accepts incoming connections. 
+    MaxValue: 65535
+    MinValue: 1150
+    Type: Number
     
   PGMasterUsername:
     AllowedPattern: "^[a-zA-Z]{1}[a-z0-9]*"
     Default: matillion
-    Description: 'The user name that is associated with the master user account for the Aurora DB that is being created.'
+    Description: The user name that is associated with the master user account for the Aurora DB that is being created.
+    Type: String
+    
+  PGMasterUserPassword:
+    AllowedPattern: '(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*'
+    Description: The Aurora/PostgreSQL master user password. Min 8 chars, must include 1 uppercase, 1 lowercase, 1 number, 1 (non / @ " ') symbol.
+    NoEcho: true
     Type: String
     
   NotificationList:
     Type: String
-    Description: >-
-        The email notification list that is used to configure an SNS topic for sending Amazon CloudWatch alarm and event notifications.
+    Description: The email notification list that is used to configure an SNS topic for sending Amazon CloudWatch alarm and event notifications.
     Default: "ops@company.com"
     AllowedPattern: '^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
-    ConstraintDescription: provide a valid email address.
+    ConstraintDescription: Provide a valid email address.
     
   EnableBastion: 
     AllowedValues: 
@@ -361,17 +306,21 @@ Parameters:
       - m4.xlarge
       - m4.2xlarge
       - m4.4xlarge
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
     Default: t2.medium
     Description: The Amazon EC2 instance type for the bastion instance.
     Type: String
     
   EnableTCPForwarding:
     Type: String
-    Description: Enables/disables TCP forwarding.
+    Description: Enables/disables TCP forwarding
     Default: 'false'
     AllowedValues:
       - 'true'
       - 'false'
+      
   EnableX11Forwarding:
     Type: String
     Description: Enables/disables X11 forwarding.
@@ -382,7 +331,7 @@ Parameters:
     
   AlternativeInitializationScript:
     AllowedPattern: ^http.*|^$
-    ConstraintDescription: URL must begin with http.
+    ConstraintDescription: URL must begin with http
     Description: (Optional) Specifies the S3 location of the custom bootstrap script to run during bastion host setup.
     Default: ''
     Type: String
@@ -396,24 +345,19 @@ Parameters:
     Type: String
     
   RedshiftDBName:
-    Description: The name of the first database to be created when the cluster is created. 
+    Description: The name of the first database to be created in the cluster is created.
     Type: String
     Default: matillion
     AllowedPattern: "([a-z]|[0-9])+"
     ConstraintDescription: must contain a-z or 0-9 only.
     
   RedshiftDBPort:
-    Description: The port number on which the Redshfit cluster accepts incoming connections.
+    Description: The port number on which the cluster accepts incoming connections.
     Type: String
     Default: '8200'
     
-  RedshiftNumberOfNodes:
-    Description: The number of compute nodes in the Amazon Redshift cluster.
-    Type: Number
-    Default: '2'
-    
   RedshiftNodeType:
-    Description: The type of node to be provisioned.
+    Description: The type of node to be provisioned
     Type: String
     Default: dc2.large
     AllowedValues:
@@ -422,6 +366,11 @@ Parameters:
       - ds2.xlarge
       - ds2.8xlarge
     ConstraintDescription: must be a valid Amazon Redshift node type.
+    
+  RedshiftNumberOfNodes:
+    Description: The number of compute nodes in the Amazon Redshift cluster.
+    Type: Number
+    Default: '2'
     
   RedshiftMasterUsername:
     Description: The user name that is associated with the master user account for the cluster that is being created.
@@ -440,8 +389,7 @@ Parameters:
     MaxLength: '64'
     AllowedPattern: '(?=^.{6,255}$)((?=.*\\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*'
     ConstraintDescription: >-
-       Enter alphanumeric password for the master user. The password must contain 8 to 64 printable ASCII characters, excluding: /, ", \'', \ and @. 
-       It must contain one uppercase letter, one lowercase letter, and one number.
+       Enter alphanumeric password for the master user. The password must contain 8 to 64 printable ASCII characters, excluding: /, ", \'', \ and @. It must contain one uppercase letter, one lowercase letter, and one number.
     
   RedshiftEnableLoggingToS3:
     Default: 'false'
@@ -449,7 +397,7 @@ Parameters:
     AllowedValues:
       - true
       - false
-    Description: Enables or disables logging to an S3 bucket.  To enable logging, select True.
+    Description: Enables or disables logging to an S3 bucket.  To enable logging, select true.
         
   RedshiftMaxConcurrentCluster:
     Description: The maximum number of concurrency scaling Redshift clusters.
@@ -469,7 +417,12 @@ Parameters:
     Description: The existing KMS key ID for encrypting Redshift database at-rest.
     Type: String
     Default: ''
- 
+    
+  RedshiftS3BucketForIAMRole:
+    Type: String
+    Description: The existing Amazon S3 bucket. An IAM role will be created and associated to the Redshift cluster with GET and LIST access to this bucket.
+    Default: ''
+
   RedshiftMaintenancewindow:
     Description: The maintenance window for the Amazon Redshift cluster.
     Type: String
@@ -484,64 +437,6 @@ Parameters:
     Description: The AWS account number where the Amazon Redshift snapshot was created. Leave this blank, if the snapshot was created in the current AWS account.
     Type: String
     Default: ''
-    
-  RedshiftS3BucketForIAMRole:
-    Type: String
-    Description: The existing Amazon S3 bucket. An IAM role will be created and associated to the Redshift cluster with GET and LIST access to this bucket.
-    Default: ''
-    
-  MatillionRealmConName:
-    Description: 'The connection user name (e.g., administrator@INTERNAL.DOMAIN.COM).'
-    Type: String
-    
-  MatillionRealmConPass:
-    Description: "The password for the connection user name used for the initial bind."
-    NoEcho: true
-    Type: String
-    
-  MatillionRealmConURL:
-    Description: 'The URL to your directory server, Example: ldap://10.10.10.254:389'
-    Type: String
-    
-  MatillionRealmMETLAPIRole:
-    Description: "The name of an existing group in the directory server whose users will be allowed to administer Matillion. Role names are case-sensitive."
-    Type: String
-    
-  MatillionRealmMETLAdminRole:
-    Description: "The name of an existing group in the directory server whose users will be allowed to administer Matillion. Role names are case-sensitive."
-    Type: String
-    
-  MatillionRealmMETLRole:
-    Description: "The name of an existing group in the directory server whose users will be allowed to log in. Role names are case-sensitive."
-    Type: String
-    
-  MatillionRealmRoleBase:
-    Description: 'The subtree below which groups are stored in the directory tree (e.g., cn=Groups,dc=INTERNAL,dc=domain,dc=com).'
-    Type: String
-    
-  MatillionRealmRoleName:
-    Description: 'The LDAP attribute used to identify a group or role (e.g., cn).'
-    Type: String
-    
-  MatillionRealmRoleSearch:
-    Description: 'The LDAP attribute to use to identify groups or roles (e.g., member={0}).'
-    Type: String
-    
-  MatillionRealmUserBase:
-    Description: 'The subtree below which users are stored in the directory tree (e.g., cn=Users,dc=INTERNAL,dc=domain,dc=com).'
-    Type: String
-    
-  MatillionRealmUserSearch:
-    Description: 'The LDAP attribute to use for identifying users (e.g., sAMAccountName={0}).'
-    Type: String
-    
-  MatillionRealmUserSubtree:
-    AllowedValues:
-    - 'true'
-    - 'false'
-    Default: 'false'
-    Description: "Sets the scope of the search. Select true if you wish to search the entire subtree, rooted at the 'User Base' entry. Selecting false (default) requests a lone top-level search."
-    Type: String
     
   TagName:
     Type: String
@@ -563,14 +458,14 @@ Parameters:
     AllowedPattern: "^[0-9a-zA-Z]+([0-9a-zA-Z-]*[0-9a-zA-Z])*$"
     ConstraintDescription: "Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
     Default: 'aws-quickstart'
-    Description: "The S3 bucket name for the Quick Start assets. The Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
+    Description: "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
     Type: String
     
   QSS3KeyPrefix:
     AllowedPattern: "^[0-9a-zA-Z-/]*$"
     ConstraintDescription: "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
     Default: 'quickstart-matillion-etl/'
-    Description: "The S3 key prefix for the Quick Start assets. The Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
+    Description: "S3 key prefix for the Quick Start assets. Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
     Type: String
     
 Conditions:
@@ -616,11 +511,10 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 
-        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/aurora-postgres/matillion_cluster_aurora.yaml
+        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/matillion_single_aurora.yaml
         - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
       Parameters:
-        MatillionEC2InstanceType: !Ref MatillionEC2InstanceType
-        KeyPairName: !Ref KeyPairName
+        AcceptedEULA: !Ref AcceptedEULA
         VPCID:
           Fn::GetAtt:
           - VPCStack
@@ -628,9 +522,6 @@ Resources:
         PublicSubnet1: !GetAtt 
           - VPCStack
           - Outputs.PublicSubnet1ID
-        PublicSubnet2: !GetAtt 
-          - VPCStack
-          - Outputs.PublicSubnet2ID
         PrivateSubnet1:
           Fn::GetAtt:
           - VPCStack
@@ -639,9 +530,9 @@ Resources:
           Fn::GetAtt:
           - VPCStack
           - Outputs.PrivateSubnet2AID
-        LBDnsName: !Ref LBDnsName
-        AcceptedEULA: !Ref AcceptedEULA
         RemoteAccessCIDR: !Ref RemoteAccessCIDR
+        MatillionEC2InstanceType: !Ref MatillionEC2InstanceType
+        KeyPairName: !Ref KeyPairName
         PGMasterUsername: !Ref PGMasterUsername
         PGMasterUserPassword: !Ref PGMasterUserPassword
         PGDBPort: !Ref PGDBPort
@@ -651,18 +542,6 @@ Resources:
         TagEnvironment: !Ref TagEnvironment
         QSS3BucketName: !Ref QSS3BucketName
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
-        MatillionRealmConName: !Ref MatillionRealmConName
-        MatillionRealmConPass: !Ref MatillionRealmConPass
-        MatillionRealmConURL: !Ref MatillionRealmConURL
-        MatillionRealmMETLAPIRole: !Ref MatillionRealmMETLAPIRole
-        MatillionRealmMETLAdminRole: !Ref MatillionRealmMETLAdminRole
-        MatillionRealmMETLRole: !Ref MatillionRealmMETLRole
-        MatillionRealmRoleBase: !Ref MatillionRealmRoleBase
-        MatillionRealmRoleName: !Ref MatillionRealmRoleName
-        MatillionRealmRoleSearch: !Ref MatillionRealmRoleSearch
-        MatillionRealmUserBase: !Ref MatillionRealmUserBase
-        MatillionRealmUserSearch: !Ref MatillionRealmUserSearch
-        MatillionRealmUserSubtree: !Ref MatillionRealmUserSubtree
         
   RedshiftStack:
     Condition: CreateRedshiftStack
@@ -715,7 +594,6 @@ Resources:
         - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-linux-bastion/templates/linux-bastion.template
         - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
       Parameters:
-        KeyPairName: !Ref KeyPairName
         PublicSubnet1ID: !GetAtt 
           - VPCStack
           - Outputs.PublicSubnet1ID
@@ -725,6 +603,7 @@ Resources:
         VPCID: !GetAtt 
           - VPCStack
           - Outputs.VPCID
+        KeyPairName: !Ref KeyPairName
         RemoteAccessCIDR: !Ref RemoteAccessCIDR
         BastionBanner: 'https://aws-quickstart.s3.amazonaws.com/quickstart-linux-bastion/scripts/banner_message.txt'
         EnableBanner: 'true'
@@ -735,12 +614,12 @@ Resources:
         EnableTCPForwarding: !Ref EnableTCPForwarding
 
 Outputs:
-  MatillionALBURL:
+  MatillionEc2InstancePublicEndpoint:
     Description: Public Endpoint for Matillion Instance
     Value:
       Fn::GetAtt:
       - MatillionStack
-      - Outputs.ALBURL
+      - Outputs.MatillionEc2InstancePublicEndpoint
   RDSJDBCConnectionString:
     Description: JDBC connection string for Matillion RDS/Postgres DB
     Value:

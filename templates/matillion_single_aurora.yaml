@@ -251,7 +251,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub 
-        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/aurora-postgres/aurora_postgres.template.yaml
+        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/aurora_postgres.template.yaml
         - QSS3Region: !If [IsGovCloud , s3-us-gov-west-1 , s3]
       Parameters:
         Subnet1ID: !Ref PrivateSubnet1
@@ -269,6 +269,7 @@ Resources:
         DBMultiAZ: 'true'
         CustomDBSecurityGroup: ''
         EnableEventSubscription: 'true'
+        DBAccessCIDR: '0.0.0.0/0'
         NotificationList: !Ref NotificationList
         EnvironmentStage: !Ref TagEnvironment
         
