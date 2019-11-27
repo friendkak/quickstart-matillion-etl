@@ -21,7 +21,6 @@ global:
 tests:
   cluster-test:
     parameter_input: cluster_param.json
-    template_file: matillion_cluster_dev-master.template.yaml
-  single-instance-test:
-    parameter_input: single_instance_param.json
-    template_file: matillion_dev-master.template.yaml
+    template_file: matillion_cluster_aurora-master.template.yaml
+    regions:
+      - us-west-1

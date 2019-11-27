@@ -4,31 +4,27 @@
         "ParameterValue": "$[taskcat_genaz_2]"
     },
     {
-        "ParameterKey": "TagOwner",
-        "ParameterValue": "tonynv"
-    },
-    {
         "ParameterKey": "RemoteAccessCIDR",
         "ParameterValue": "10.0.0.0/16"
     },
     {
         "ParameterKey": "KeyPairName",
-        "ParameterValue": "sshvans"
+        "ParameterValue": "cikey"
+    },
+    {
+        "ParameterKey": "PGMasterUserPassword",
+        "ParameterValue": "$[taskcat_genpass_8S]"
+    },
+    {
+        "ParameterKey": "RedshiftMasterUserPassword",
+        "ParameterValue": "$[taskcat_genpass_8S]"
+    },
+    {
+        "ParameterKey": "RedshiftNumberOfNodes",
+        "ParameterValue": "1"
     },
     {
         "ParameterKey": "QSS3BucketName",
         "ParameterValue": "$[taskcat_autobucket]"
-    },
-    {
-        "ParameterKey": "MasterUsername",
-        "ParameterValue": "dbmaster"
-    },
-    {
-        "ParameterKey": "PGMasterUserPassword",
-        "ParameterValue": "$[taskcat_genpass_8A]"
-    },
-    {
-        "ParameterKey": "RedshiftMasterUserPassword",
-        "ParameterValue": "$[taskcat_genpass_8A]"
     }
 ]

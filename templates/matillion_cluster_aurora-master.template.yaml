@@ -429,47 +429,58 @@ Parameters:
   MatillionRealmConName:
     Description: 'The connection user name (e.g., administrator@INTERNAL.DOMAIN.COM).'
     Type: String
+    Default: ''
     
   MatillionRealmConPass:
     Description: "The password for the connection user name used for the initial bind."
     NoEcho: true
     Type: String
+    Default: ''
     
   MatillionRealmConURL:
     Description: 'The URL to your directory server, Example: ldap://10.10.10.254:389'
     Type: String
+    Default: ''
     
   MatillionRealmMETLAPIRole:
     Description: "The name of an existing group in the directory server whose users will be allowed to administer Matillion. Role names are case-sensitive."
     Type: String
+    Default: ''
     
   MatillionRealmMETLAdminRole:
     Description: "The name of an existing group in the directory server whose users will be allowed to administer Matillion. Role names are case-sensitive."
     Type: String
+    Default: ''
     
   MatillionRealmMETLRole:
     Description: "The name of an existing group in the directory server whose users will be allowed to log in. Role names are case-sensitive."
     Type: String
+    Default: ''
     
   MatillionRealmRoleBase:
     Description: 'The subtree below which groups are stored in the directory tree (e.g., cn=Groups,dc=INTERNAL,dc=domain,dc=com).'
     Type: String
+    Default: ''
     
   MatillionRealmRoleName:
     Description: 'The LDAP attribute used to identify a group or role (e.g., cn).'
     Type: String
+    Default: ''
     
   MatillionRealmRoleSearch:
     Description: 'The LDAP attribute to use to identify groups or roles (e.g., member={0}).'
     Type: String
+    Default: ''
     
   MatillionRealmUserBase:
     Description: 'The subtree below which users are stored in the directory tree (e.g., cn=Users,dc=INTERNAL,dc=domain,dc=com).'
     Type: String
+    Default: ''
     
   MatillionRealmUserSearch:
     Description: 'The LDAP attribute to use for identifying users (e.g., sAMAccountName={0}).'
     Type: String
+    Default: ''
     
   MatillionRealmUserSubtree:
     AllowedValues:
