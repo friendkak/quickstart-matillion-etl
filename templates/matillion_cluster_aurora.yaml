@@ -124,8 +124,7 @@ Parameters:
   AcceptedEULA: 
     AllowedValues: 
       - "Yes"
-      - "No"
-    Default: "No"
+    Default: "Yes"
     Description: >- 
         PLEASE READ THE MATILLION ETL FOR REDSHIFT EULA (https://redshift-support.matillion.com/s/article/2845300) CAREFULLY BEFORE USING THE SOFTWARE. 
         The Matillion stack can be created only if you have already accepted the EULA. To accept the EULA, see https://aws.amazon.com/marketplace/pp/B010ED5YF8.     
@@ -550,7 +549,7 @@ Resources:
             - MatillionEc2Instance1
             - " --region "
             - Ref: AWS::Region
-            - "|| echo 'signal failed but continuing' \n"
+            - "|| echo 'signal failed but continuing with stack deployment. It is possible that the other node has already sent the success message' \n"
             - "service awslogs start \n"
             - 'xmlstarlet ed --inplace -d "/Server/Service/Engine/Realm" '
             - '-s ''/Server/Service/Engine'' -t elem -n Realm -v "" '
@@ -704,7 +703,7 @@ Resources:
             - MatillionEc2Instance2
             - " --region "
             - Ref: AWS::Region
-            - "|| echo 'signal failed but continuing' \n"
+            - "|| echo 'signal failed but continuing with stack deployment. It is possible that the other node has already sent the success message' \n"
             - "service awslogs start \n"
             - 'xmlstarlet ed --inplace -d "/Server/Service/Engine/Realm" '
             - '-s ''/Server/Service/Engine'' -t elem -n Realm -v "" '

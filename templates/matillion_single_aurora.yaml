@@ -80,8 +80,7 @@ Parameters:
   AcceptedEULA: 
     AllowedValues: 
       - "Yes"
-      - "No"
-    Default: "No"
+    Default: "Yes"
     Description: >- 
         PLEASE READ THE MATILLION ETL FOR REDSHIFT EULA (https://redshift-support.matillion.com/s/article/2845300) 
         CAREFULLY BEFORE USING THE SOFTWARE. The Matillion stack can be created only if you have already accepted the EULA. 
@@ -427,7 +426,7 @@ Resources:
             - MatillionEc2Instance
             - " --region "
             - Ref: AWS::Region
-            - "\n"
+            - "|| echo 'signal failed but continuing with stack deployment. It is possible that the other node has already sent the success message' \n"
             - "service awslogs start \n"         
     Type: AWS::EC2::Instance
     
