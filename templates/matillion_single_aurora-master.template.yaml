@@ -211,7 +211,7 @@ Parameters:
     - m5.2xlarge
     - r3.2xlarge
     Default: m4.large
-    Description: "The Amazon EC2 instance type for the Matillion instance. A larger instance type enables greater workload concurrency. For more information, see https://www.matillion.com/pricing/"
+    Description: "The Amazon EC2 instance type for the Matillion instance. A larger instance type enables greater workload concurrency. For more information, see https://www.matillion.com/pricing/
     Type: String
       
   KeyPairName:

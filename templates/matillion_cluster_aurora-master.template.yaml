@@ -492,7 +492,7 @@ Parameters:
     
   TagName:
     Type: String
-    Description: 'The unique friendly name as required by your company’s tagging strategy document, which will be added to the tag.'
+    Description: 'The unique friendly name as required by your company’s tagging strategy document, and will be added to the tag.'
     Default: 'matillion-qs'
     
   TagEnvironment:
