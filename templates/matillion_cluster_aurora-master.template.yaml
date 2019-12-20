@@ -256,7 +256,7 @@ Parameters:
     Default: m4.large
     Description: >- 
         The Amazon EC2 instance type for the Matillion instance. A larger instance type enables greater workload concurrency. 
-        For more information, see https://www.matillion.com/pricing/etl-for-redshift/.
+        For more information, see https://www.matillion.com/pricing/
     Type: String
       
   KeyPairName:
@@ -339,7 +339,7 @@ Parameters:
     ConstraintDescription: must contain a-z or 0-9 only.
     
   RedshiftDBPort:
-    Description: The port number on which the Redshfit cluster accepts incoming connections.
+    Description: The port number on which the Amazon Redshfit cluster accepts incoming connections.
     Type: String
     Default: '8200'
     
@@ -388,12 +388,12 @@ Parameters:
     Description: Enables or disables logging to an S3 bucket.  To enable logging, select True.
         
   RedshiftMaxConcurrentCluster:
-    Description: The maximum number of concurrency scaling Redshift clusters.
+    Description: The maximum number of concurrency scaling Amazon Redshift clusters.
     Type: String
     Default: '1'
     
   RedshiftEncryptionAtRest:
-    Description: Enables or disables encryption at rest of the Redshift database.
+    Description: Enables or disables encryption at rest of the Amazon Redshift database.
     Type: String
     Default: 'false'
     AllowedValues:
@@ -402,7 +402,7 @@ Parameters:
     ConstraintDescription: must be true or false.
   
   Redshiftkmskey:
-    Description: The existing KMS key ID for encrypting Redshift database at-rest.
+    Description: The existing KMS key ID for encrypting Amazon Redshift database at-rest.
     Type: String
     Default: ''
  
@@ -412,7 +412,7 @@ Parameters:
     Default: 'sat:05:00-sat:05:30'
     
   RedshiftSnapshotIdentifier:
-    Description: The Redshift snapshot identifier. Leave this blank for a new cluster. Enter the snapshot identifier, only if you want to restore from a snapshot.
+    Description: The Amazon Redshift snapshot identifier. Leave this blank for a new cluster. Enter the snapshot identifier, only if you want to restore from a snapshot.
     Type: String
     Default: ''
     

@@ -135,19 +135,19 @@ Parameters:
     Type: AWS::EC2::VPC::Id
     
   PrivateSubnet1:
-    Description: "An existing Private subnet to launch secondary resources, e.g. Postgres database."
+    Description: "An existing private subnet to launch secondary resources, e.g. Postgres database."
     Type: AWS::EC2::Subnet::Id
     
   PrivateSubnet2:
-    Description: "An existing Private subnet to launch secondary resources, e.g. Postgres database."
+    Description: "An existing private subnet to launch secondary resources, e.g. Postgres database."
     Type: AWS::EC2::Subnet::Id
     
   PublicSubnet1:
-    Description: "An existing Public subnet to launch the Matillion ec2 instance(s) into."
+    Description: "An existing public subnet to launch the Matillion EC2 instance(s) into."
     Type: AWS::EC2::Subnet::Id
     
   PublicSubnet2:
-    Description: "An existing Public subnet to launch the Matillion ec2 instance(s) into."
+    Description: "An existing public subnet to launch the Matillion EC2 instance(s) into."
     Type: AWS::EC2::Subnet::Id
     
   RemoteAccessCIDR:
@@ -177,7 +177,9 @@ Parameters:
     - m5.2xlarge
     - r3.2xlarge
     Default: m4.large
-    Description: The Amazon EC2 instance type for the Matillion instance. A larger instance type enables greater workload concurrency. For more information, see https://www.matillion.com/pricing/etl-for-redshift/.
+
+    Description: The Amazon EC2 instance type for the Matillion instance. A larger instance type enables greater workload concurrency. For more information, see https://www.matillion.com/pricing/
+
     Type: String
     
   KeyPairName:

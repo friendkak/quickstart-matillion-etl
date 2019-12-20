@@ -211,7 +211,7 @@ Parameters:
     - m5.2xlarge
     - r3.2xlarge
     Default: m4.large
-    Description: "The Amazon EC2 instance type for the Matillion instance. A larger instance type enables greater workload concurrency. For more information, see https://www.matillion.com/pricing/etl-for-redshift/."
+    Description: "The Amazon EC2 instance type for the Matillion instance. A larger instance type enables greater workload concurrency. For more information, see https://www.matillion.com/pricing/
     Type: String
       
   KeyPairName:
@@ -277,7 +277,7 @@ Parameters:
     Type: String
     
   RedshiftDBName:
-    Description: The name of the first database to be created in the cluster is created.
+    Description: The name of the first database to be created when the cluster is created.
     Type: String
     Default: matillion
     AllowedPattern: "([a-z]|[0-9])+"
@@ -332,12 +332,12 @@ Parameters:
     Description: Enables or disables logging to an S3 bucket.  To enable logging, select true.
         
   RedshiftMaxConcurrentCluster:
-    Description: The maximum number of concurrency scaling Redshift clusters.
+    Description: The maximum number of concurrency scaling Amazon Redshift clusters.
     Type: String
     Default: '1'
     
   RedshiftEncryptionAtRest:
-    Description: Enables or disables encryption at rest of the Redshift database.
+    Description: Enables or disables encryption at rest of the Amazon Redshift database.
     Type: String
     Default: 'false'
     AllowedValues:
@@ -346,13 +346,13 @@ Parameters:
     ConstraintDescription: must be true or false.
   
   Redshiftkmskey:
-    Description: The existing KMS key ID for encrypting Redshift database at-rest.
+    Description: The existing KMS key ID for encrypting Amazon Redshift database at-rest.
     Type: String
     Default: ''
     
   RedshiftS3BucketForIAMRole:
     Type: String
-    Description: The existing Amazon S3 bucket. An IAM role will be created and associated to the Redshift cluster with GET and LIST access to this bucket.
+    Description: The existing Amazon S3 bucket. An IAM role will be created and associated to the Amazon Redshift cluster with GET and LIST access to this bucket.
     Default: ''
 
   RedshiftMaintenancewindow:
@@ -372,7 +372,7 @@ Parameters:
     
   TagName:
     Type: String
-    Description: 'The unique friendly name as required by your company’s tagging strategy document, and will be added to the tag.'
+    Description: 'The unique friendly name as required by your company’s tagging strategy document, which will be added to the tag.'
     Default: 'matillion-qs'
     
   TagEnvironment:
