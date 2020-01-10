@@ -1,4 +1,4 @@
-Description: "This cloudformation template creates AWS VPC, an Amazon Redshift Instance and Matillion software installed in a Clustered configuration."
+Description: "This cloudformation template creates AWS VPC, an Amazon Redshift Instance and Matillion software installed in a Clustered configuration. (qs-1qbosodcm)"
 Metadata:
   LICENSE: EULA - Matillion ETL for Redshift
   AWS::CloudFormation::Interface:
