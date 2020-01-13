@@ -7,7 +7,7 @@ Matillion ETL for Amazon Redshift is an extract, transform, and load/extract, lo
 
 You can load data into Amazon Redshift from data sources such as on-premises and cloud databases, cloud and software as a service (SaaS) applications, application programming interfaces (APIs), files, and NoSQL databases. After your data is available in Amazon Redshift, you can combine transformation components in Matillion ETL to build complex data transformations for visualizations, business intelligence, reporting, and advanced analytics.
 
-![Quick Start architecture for Matillion ETL – single instance](https://d1.awsstatic.com/partner-network/QuickStart/datasheets/matillion-etl-on-aws-arch-single.f3b674eb0ec3670d77b240cd303bb6eef9874f3b.png)
+![Quick Start architecture for Matillion ETL – single instance](https://d1.awsstatic.com/partner-network/QuickStart/datasheets/matillion-etl-on-aws-arch-single.efddec9fd519a5dacefdd1bb5ddf77db19de831a.png)
 
 ![Quick Start architecture for Matillion ETL – high availability](https://d1.awsstatic.com/partner-network/QuickStart/datasheets/matillion-etl-on-aws-architecture-HA.d3b3c8f87bcb87888d1024bb259dcf568f6b2d57.png)
 
