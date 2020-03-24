@@ -629,7 +629,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub
-        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/redshift.template.yaml'
+        - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-amazon-redshift/redshift.template.yaml'
         - S3Region:
             !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
           S3Bucket:
@@ -671,7 +671,7 @@ Resources:
         GlueCatalogDatabase: ''
         QSS3BucketName: !Ref QSS3BucketName
         QSS3BucketRegion: !Ref QSS3BucketRegion
-        QSS3KeyPrefix: !Ref QSS3KeyPrefix
+        QSS3KeyPrefix: !Sub ${QSS3KeyPrefix}submodules/quickstart-amazon-redshift/
         TagName: !Ref TagName
         TagEnvironment: !Ref TagEnvironment
 
