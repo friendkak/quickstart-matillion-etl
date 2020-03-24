@@ -55,9 +55,10 @@ Metadata:
       - TagEnvironment
       - TagName
     - Label:
-        default: AWS Quick Start configuration 
-      Parameters:
+        default: AWS Quick Start configuration
+      Parameters:      
       - QSS3BucketName
+      - QSS3BucketRegion
       - QSS3KeyPrefix
     ParameterLabels:
       AcceptedEULA:
@@ -127,9 +128,11 @@ Metadata:
       TagName:
         default: Unique friendly name
       QSS3BucketName:
-        default: Quick Start S3 bucket name
+        default: Quick Start S3 Bucket Name
+      QSS3BucketRegion:
+        default: Quick Start S3 bucket region
       QSS3KeyPrefix:
-        default: Quick Start S3 key prefix
+        default: Quick Start S3 Key Prefix
 Parameters:
     
   AcceptedEULA: 
@@ -327,8 +330,8 @@ Parameters:
     Default: 'false'
     Type: String
     AllowedValues:
-      - true
-      - false
+      - 'true'
+      - 'false'
     Description: Enables or disables logging to an S3 bucket.  To enable logging, select true.
         
   RedshiftMaxConcurrentCluster:
@@ -341,8 +344,8 @@ Parameters:
     Type: String
     Default: 'false'
     AllowedValues:
-      - true
-      - false
+      - 'true'
+      - 'false'
     ConstraintDescription: must be true or false.
   
   Redshiftkmskey:
@@ -393,6 +396,11 @@ Parameters:
     Description: "S3 bucket name for the Quick Start assets. Quick Start bucket name can include numbers, lowercase letters, uppercase letters, and hyphens (-). It cannot start or end with a hyphen (-)."
     Type: String
     
+   QSS3BucketRegion:
+    Default: 'us-east-1'
+    Description: "The AWS Region where the Quick Start S3 bucket (QSS3BucketName) is hosted. When using your own bucket, you must specify this value."
+    Type: String
+  
   QSS3KeyPrefix:
     AllowedPattern: "^[0-9a-zA-Z-/]*$"
     ConstraintDescription: "Quick Start key prefix can include numbers, lowercase letters, uppercase letters, hyphens (-), and forward slash (/)."
@@ -401,9 +409,7 @@ Parameters:
     Type: String
     
 Conditions:
-  GovCloudCondition: !Equals 
-    - !Ref 'AWS::Region'
-    - us-gov-west-1
+  UsingDefaultBucket: !Equals [!Ref QSS3BucketName, 'aws-quickstart']
   CreateRedshiftStack: !Equals
     - !Ref EnableRedshiftStack
     - "true"
@@ -416,13 +422,11 @@ Resources:
   VPCStack:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
-      TemplateURL: !Sub
-        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template
-        - QSS3Region:
-            Fn::If:
-            - GovCloudCondition
-            - s3-us-gov-west-1
-            - s3
+      TemplateURL:
+        !Sub
+          - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}submodules/quickstart-aws-vpc/templates/aws-vpc.template'
+          - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+            S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
         AvailabilityZones: !Join 
           - ','
@@ -439,9 +443,11 @@ Resources:
     Condition: IsAcceptedEULA
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 
-        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}templates/matillion_single_aurora.yaml
-        - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
+      TemplateURL:
+        !Sub
+          - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/matillion_single_aurora.yaml'
+          - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+            S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
         AcceptedEULA: !Ref AcceptedEULA
         VPCID:
@@ -470,15 +476,18 @@ Resources:
         NotificationList: !Ref NotificationList
         TagEnvironment: !Ref TagEnvironment
         QSS3BucketName: !Ref QSS3BucketName
+        QSS3BucketRegion: !Ref QSS3BucketRegion
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         
   RedshiftStack:
     Condition: CreateRedshiftStack
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub 
-        - https://${QSS3BucketName}.${QSS3Region}.amazonaws.com/${QSS3KeyPrefix}submodules/quickstart-amazon-redshift/templates/redshift.template.yaml
-        - QSS3Region: !If [GovCloudCondition , s3-us-gov-west-1 , s3]
+      TemplateURL:
+        !Sub
+          - 'https://${S3Bucket}.s3.${S3Region}.${AWS::URLSuffix}/${QSS3KeyPrefix}templates/redshift.template.yaml'
+          - S3Region: !If [UsingDefaultBucket, !Ref 'AWS::Region', !Ref QSS3BucketRegion]
+            S3Bucket: !If [UsingDefaultBucket, !Sub '${QSS3BucketName}-${AWS::Region}', !Ref QSS3BucketName]
       Parameters:
         Subnet1ID:
           Fn::GetAtt:
@@ -511,6 +520,7 @@ Resources:
         S3BucketForRedshiftIAMRole: !Ref RedshiftS3BucketForIAMRole
         GlueCatalogDatabase: ''
         QSS3BucketName: !Ref QSS3BucketName
+        QSS3BucketRegion: !Ref QSS3BucketRegion
         QSS3KeyPrefix: !Ref QSS3KeyPrefix
         TagName: !Ref TagName
         TagEnvironment: !Ref TagEnvironment

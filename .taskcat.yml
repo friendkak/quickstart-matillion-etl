@@ -1,0 +1,33 @@
+project:
+  name: quickstart-matillion-etl
+  owner: quickstart-eng@amazon.com
+  package_lambda: false
+  regions:
+    - ap-northeast-1
+  # - ap-northeast-2
+  # - ap-south-1
+  # - ap-southeast-1
+  # - ap-southeast-2
+  # - ca-central-1
+  # - eu-central-1
+  # - eu-west-1
+  # - sa-east-1
+  # - us-east-1
+  # - us-east-2
+  # - us-west-1
+  # - us-west-2
+tests:
+  cluster-test:
+    parameters:
+      AvailabilityZones: $[taskcat_genaz_2]
+      KeyPairName: cikey
+      PGMasterUserPassword: $[taskcat_genpass_8S]
+      QSS3BucketName: $[taskcat_autobucket]
+      QSS3BucketRegion: $[taskcat_current_region]
+      QSS3KeyPrefix: quickstart-matillion-etl/
+      RedshiftMasterUserPassword: $[taskcat_genpass_8S]
+      RedshiftNumberOfNodes: '1'
+      RemoteAccessCIDR: 10.0.0.0/16
+    regions:
+      - ap-northeast-1
+    template: templates/matillion_cluster_aurora-master.template.yaml
